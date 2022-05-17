@@ -23,8 +23,8 @@ export default class WebGL {
     })
 
     this.renderer.setPixelRatio(window.devicePixelRatio)
-    this.renderer.outputEncoding = THREE.sRGBEncoding
-    this.renderer.toneMapping = THREE.ReinhardToneMapping
+    // this.renderer.outputEncoding = THREE.sRGBEncoding
+    // this.renderer.toneMapping = THREE.ReinhardToneMapping
 
     this.container.appendChild(this.renderer.domElement)
 
@@ -70,11 +70,13 @@ export default class WebGL {
     this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
       this.house_1 = gltf.scene
 
-      this.texture = new THREE.TextureLoader().load('textures/Color_1-min.png')
+      this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
+      this.texture.flipY = false
       this.house_1.traverse((o) => {
         console.log(o)
         if (o.isMesh) {
           o.material.map = this.texture
+          o.material = new THREE.MeshNormalMaterial()
         }
       })
 

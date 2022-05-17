@@ -572,7 +572,7 @@ class WebGL {
     }
     addObjects() {
         const loader = new _gltfloader.GLTFLoader();
-        loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/574321a93e1140031124a4840324900b932934d2/src/gltf/house_1.gltf?raw=true', (gltf)=>{
+        loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/src/gltf/house_1.gltf?raw=true', (gltf)=>{
             console.log(gltf);
             this.scene.add(gltf.scene.children[0]);
         }, undefined, function(error) {

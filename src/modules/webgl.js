@@ -49,7 +49,7 @@ export default class WebGL {
     const loader = new GLTFLoader()
 
     loader.load(
-      'https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/574321a93e1140031124a4840324900b932934d2/src/gltf/house_1.gltf?raw=true',
+      'https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/src/gltf/house_1.gltf?raw=true',
       (gltf) => {
         console.log(gltf)
         this.scene.add(gltf.scene.children[0])

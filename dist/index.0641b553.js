@@ -542,6 +542,7 @@ var _dracoloader = require("three/examples/jsm/loaders/DRACOLoader");
 var _orbitControlsJs = require("three/examples/jsm/controls/OrbitControls.js");
 class WebGL {
     constructor(options){
+        // Base
         this.container = options.dom;
         this.scene = new _three.Scene();
         this.width = this.container.offsetWidth;
@@ -550,15 +551,26 @@ class WebGL {
         this.camera.position.z = 1;
         this.renderer = new _three.WebGLRenderer({
             alpha: true,
-            outputEncoding: _three.sRGBEncoding
+            antialias: true
         });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.outputEncoding = _three.sRGBEncoding;
+        this.renderer.toneMapping = _three.ReinhardToneMapping;
         this.container.appendChild(this.renderer.domElement);
+        // Controls
         this.controls = new _orbitControlsJs.OrbitControls(this.camera, this.renderer.domElement);
+        // Time
         this.time = 0;
+        // Loading Manager
+        this.manager = new _three.LoadingManager();
+        // Empty Variables
+        this.house_1;
+        // Functions
         this.resize();
         this.setupResize();
         this.addObjects();
         this.render();
+        this.loadingManager();
     }
     setupResize() {
         window.addEventListener('resize', this.resize.bind(this));
@@ -571,13 +583,34 @@ class WebGL {
         this.camera.updateProjectionMatrix();
     }
     addObjects() {
-        const loader = new _gltfloader.GLTFLoader();
-        loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/src/gltf/house_1.gltf?raw=true', (gltf)=>{
-            console.log(gltf);
-            this.scene.add(gltf.scene.children[0]);
-        }, undefined, function(error) {
-            console.error(error);
+        // GLTF
+        this.loader = new _gltfloader.GLTFLoader(this.manager);
+        this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf)=>{
+            this.house_1 = gltf.scene;
+            this.texture = new _three.TextureLoader().load('textures/Color_1-min.png');
+            this.house_1.traverse((o)=>{
+                console.log(o);
+                if (o.isMesh) o.material.map = this.texture;
+            });
+            this.scene.add(this.house_1);
         });
+        // LIGHTS
+        this.light = new _three.HemisphereLight(0xffffff, 0xffffff, 1);
+        this.scene.add(this.light);
+    }
+    loadingManager() {
+        this.manager.onStart = function(url, itemsLoaded, itemsTotal) {
+        // console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.')
+        };
+        this.manager.onLoad = function() {
+        // console.log(this.house_1)
+        };
+        this.manager.onProgress = function(url, itemsLoaded, itemsTotal) {
+            console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+        };
+        this.manager.onError = function(url) {
+            console.log('There was an error loading ' + url);
+        };
     }
     render() {
         this.time += 0.05;

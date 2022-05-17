@@ -5,6 +5,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 export default class WebGL {
   constructor(options) {
+    // Base
+
     this.container = options.dom
 
     this.scene = new THREE.Scene()
@@ -17,19 +19,35 @@ export default class WebGL {
 
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
-      outputEncoding: THREE.sRGBEncoding,
+      antialias: true,
     })
+
+    this.renderer.setPixelRatio(window.devicePixelRatio)
+    this.renderer.outputEncoding = THREE.sRGBEncoding
+    this.renderer.toneMapping = THREE.ReinhardToneMapping
 
     this.container.appendChild(this.renderer.domElement)
 
+    // Controls
+
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+
+    // Time
 
     this.time = 0
 
+    // Loading Manager
+    this.manager = new THREE.LoadingManager()
+
+    // Empty Variables
+    this.house_1
+
+    // Functions
     this.resize()
     this.setupResize()
     this.addObjects()
     this.render()
+    this.loadingManager()
   }
 
   setupResize() {
@@ -46,19 +64,44 @@ export default class WebGL {
   }
 
   addObjects() {
-    const loader = new GLTFLoader()
+    // GLTF
+    this.loader = new GLTFLoader(this.manager)
 
-    loader.load(
-      'https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/src/gltf/house_1.gltf?raw=true',
-      (gltf) => {
-        console.log(gltf)
-        this.scene.add(gltf.scene.children[0])
-      },
-      undefined,
-      function (error) {
-        console.error(error)
-      }
-    )
+    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+      this.house_1 = gltf.scene
+
+      this.texture = new THREE.TextureLoader().load('textures/Color_1-min.png')
+      this.house_1.traverse((o) => {
+        console.log(o)
+        if (o.isMesh) {
+          o.material.map = this.texture
+        }
+      })
+
+      this.scene.add(this.house_1)
+    })
+
+    // LIGHTS
+    this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
+    this.scene.add(this.light)
+  }
+
+  loadingManager() {
+    this.manager.onStart = function (url, itemsLoaded, itemsTotal) {
+      // console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.')
+    }
+
+    this.manager.onLoad = function () {
+      // console.log(this.house_1)
+    }
+
+    this.manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.')
+    }
+
+    this.manager.onError = function (url) {
+      console.log('There was an error loading ' + url)
+    }
   }
 
   render() {

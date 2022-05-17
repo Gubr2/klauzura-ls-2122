@@ -554,7 +554,7 @@ class WebGL {
             antialias: true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        // this.renderer.outputEncoding = THREE.sRGBEncoding
+        this.renderer.outputEncoding = _three.sRGBEncoding;
         // this.renderer.toneMapping = THREE.ReinhardToneMapping
         this.container.appendChild(this.renderer.domElement);
         // Controls
@@ -587,16 +587,23 @@ class WebGL {
         this.loader = new _gltfloader.GLTFLoader(this.manager);
         this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf)=>{
             this.house_1 = gltf.scene;
-            this.texture = new _three.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png');
-            this.texture.flipY = false;
+            // this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
+            // this.texture.flipY = false
+            // this.house_1.traverse((o) => {
+            //   console.log(o)
+            //   if (o.isMesh) {
+            //     o.material.map = this.texture
+            //     o.material = new THREE.MeshNormalMaterial()
+            //   }
+            // })
+            this.scene.add(this.house_1);
             this.house_1.traverse((o)=>{
                 console.log(o);
-                if (o.isMesh) {
-                    o.material.map = this.texture;
-                    o.material = new _three.MeshNormalMaterial();
-                }
+            // if (o.isMesh) {
+            //   o.material.map = this.texture
+            //   o.material = new THREE.MeshNormalMaterial()
+            // }
             });
-            this.scene.add(this.house_1);
         });
         // LIGHTS
         this.light = new _three.HemisphereLight(0xffffff, 0xffffff, 1);

@@ -64,32 +64,46 @@ export default class WebGL {
   }
 
   addObjects() {
+    // Main Grop
+    this.group = new THREE.Group()
+    this.scene.add(this.group)
+
     // GLTF
     this.loader = new GLTFLoader(this.manager)
 
-    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
-      this.house_1 = gltf.scene
+    for (let index = 0; index < 3; index++) {
+      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+        this.house_1 = gltf.scene
+        this.group.add(this.house_1)
 
-      // this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
-      // this.texture.flipY = false
-      // this.house_1.traverse((o) => {
-      //   console.log(o)
-      //   if (o.isMesh) {
-      //     o.material.map = this.texture
-      //     o.material = new THREE.MeshNormalMaterial()
-      //   }
-      // })
+        this.house_1.position.x = index
 
-      this.scene.add(this.house_1)
-
-      this.house_1.traverse((o) => {
-        console.log(o)
-        // if (o.isMesh) {
-        //   o.material.map = this.texture
-        //   o.material = new THREE.MeshNormalMaterial()
-        // }
+        console.log(this.house_1)
+        // this.house_1.position.z = (index / 4) * 3
       })
-    })
+    }
+
+    // this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+    //   this.house_1 = gltf.scene
+    //   // this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
+    //   // this.texture.flipY = false
+    //   // this.house_1.traverse((o) => {
+    //   //   console.log(o)
+    //   //   if (o.isMesh) {
+    //   //     o.material.map = this.texture
+    //   //     o.material = new THREE.MeshNormalMaterial()
+    //   //   }
+    //   // })
+    //   this.group.add(this.house_1)
+
+    //   this.house_1.traverse((o) => {
+    //     console.log(o)
+    //     // if (o.isMesh) {
+    //     //   o.material.map = this.texture
+    //     //   o.material = new THREE.MeshNormalMaterial()
+    //     // }
+    //   })
+    // })
 
     // LIGHTS
     this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)

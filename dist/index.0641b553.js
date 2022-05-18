@@ -542,15 +542,29 @@ var _dracoloader = require("three/examples/jsm/loaders/DRACOLoader");
 var _orbitControlsJs = require("three/examples/jsm/controls/OrbitControls.js");
 class WebGL {
     constructor(options){
+        //
+        // SETTINGS
+        //
+        // ---> Houses
+        this.vDist = 0.83809;
+        this.hCount = 3;
+        this.vCount = 7;
+        this.target = new _three.Vector3();
+        // ---> Fog
+        this.fogColor = 0xf5eedf;
+        ///////////////////////////////////////////////
         // Base
         this.container = options.dom;
         this.scene = new _three.Scene();
+        this.scene.fog = new _three.Fog(this.fogColor, 4, 8);
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
-        this.camera = new _three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.z = 1;
+        this.camera = new _three.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.z = 4;
+        this.camera.position.y = 4;
+        this.camera.position.x = 2;
         this.renderer = new _three.WebGLRenderer({
-            alpha: true,
+            // alpha: true,
             antialias: true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -563,8 +577,8 @@ class WebGL {
         this.time = 0;
         // Loading Manager
         this.manager = new _three.LoadingManager();
-        // Empty Variables
-        this.house_1;
+        // Flags
+        this.loadedForAnimation = false;
         // Functions
         this.resize();
         this.setupResize();
@@ -582,30 +596,29 @@ class WebGL {
         this.camera.updateProjectionMatrix();
     }
     addObjects() {
-        // ---> Main Group
-        this.group_1 = new _three.Group();
-        this.group_2 = new _three.Group();
-        this.scene.add(this.group_1);
-        this.scene.add(this.group_2);
+        // GROUPS
+        this.group_main = new _three.Group();
+        this.scene.add(this.group_main);
         // GLTF
         this.loader = new _gltfloader.GLTFLoader(this.manager);
-        // 0.83809
         this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf)=>{
             this.house_1 = gltf.scene;
-            for(let index = 0; index < 5; index++){
+            for(let i = 0; i < this.vCount; i++)for(let y = 0; y < this.hCount; y++){
                 this.clone = this.house_1.clone();
                 this.clone.rotation.y = Math.PI;
-                this.clone.position.x = index * 2;
-                this.group_1.add(this.clone);
+                this.clone.position.x = i % 2 == 0 ? y * 2 + 1 : y * 2;
+                this.clone.position.z = i * this.vDist;
+                this.group_main.add(this.clone);
             }
         });
         this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf)=>{
             this.house_2 = gltf.scene;
-            for(let index = 0; index < 5; index++){
+            for(let i = 0; i < this.vCount; i++)for(let y = 0; y < this.hCount; y++){
                 this.clone = this.house_2.clone();
                 this.clone.rotation.y = Math.PI;
-                this.clone.position.x = index * 2 + 1;
-                this.group_2.add(this.clone);
+                this.clone.position.x = i % 2 == 0 ? y * 2 + 2 : y * 2 + 1;
+                this.clone.position.z = i * this.vDist;
+                this.group_main.add(this.clone);
             }
         });
         // this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
@@ -633,14 +646,19 @@ class WebGL {
         this.scene.add(this.light);
         // AFTER LOAD
         this.manager.onLoad = ()=>{
-            this.groupSize = new _three.Box3().setFromObject(this.group_1).getSize(new _three.Vector3());
-            this.group_1.position.x = -this.groupSize.x / 2;
-            this.group_2.position.x = -this.groupSize.x / 2;
+            this.groupSize = new _three.Box3().setFromObject(this.group_main).getSize(new _three.Vector3());
+            this.group_main.position.x = -this.groupSize.x / 2;
+            this.group_main.position.z = -this.groupSize.z / 2;
+            this.loadedForAnimation = true;
         };
     }
     render() {
         this.time += 0.05;
         window.requestAnimationFrame(this.render.bind(this));
+        this.group_main.position.z += 0.0025;
+        if (this.loadedForAnimation) this.scene.children[0].children.forEach((house)=>{
+            if (house.getWorldPosition(this.target).z > 2.5) house.position.z -= this.vDist * this.vCount;
+        });
         this.renderer.render(this.scene, this.camera);
     }
 }

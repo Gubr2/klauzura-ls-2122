@@ -2,23 +2,44 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { Group } from 'three'
 
 export default class WebGL {
   constructor(options) {
+    //
+    // SETTINGS
+    //
+
+    // ---> Houses
+
+    this.vDist = 0.83809
+    this.hCount = 3
+    this.vCount = 7
+
+    this.target = new THREE.Vector3()
+
+    // ---> Fog
+    this.fogColor = 0xf5eedf
+
+    ///////////////////////////////////////////////
+
     // Base
 
     this.container = options.dom
 
     this.scene = new THREE.Scene()
+    this.scene.fog = new THREE.Fog(this.fogColor, 4, 8)
 
     this.width = this.container.offsetWidth
     this.height = this.container.offsetHeight
 
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-    this.camera.position.z = 1
+    this.camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 1000)
+    this.camera.position.z = 4
+    this.camera.position.y = 4
+    this.camera.position.x = 2
 
     this.renderer = new THREE.WebGLRenderer({
-      alpha: true,
+      // alpha: true,
       antialias: true,
     })
 
@@ -39,8 +60,8 @@ export default class WebGL {
     // Loading Manager
     this.manager = new THREE.LoadingManager()
 
-    // Empty Variables
-    this.house_1
+    // Flags
+    this.loadedForAnimation = false
 
     // Functions
     this.resize()
@@ -63,41 +84,45 @@ export default class WebGL {
   }
 
   addObjects() {
-    // ---> Main Group
-    this.group_1 = new THREE.Group()
-    this.group_2 = new THREE.Group()
+    // GROUPS
+    this.group_main = new THREE.Group()
 
-    this.scene.add(this.group_1)
-    this.scene.add(this.group_2)
+    this.scene.add(this.group_main)
 
     // GLTF
     this.loader = new GLTFLoader(this.manager)
 
-    // 0.83809
-
     this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
       this.house_1 = gltf.scene
 
-      for (let index = 0; index < 5; index++) {
-        this.clone = this.house_1.clone()
+      for (let i = 0; i < this.vCount; i++) {
+        for (let y = 0; y < this.hCount; y++) {
+          this.clone = this.house_1.clone()
 
-        this.clone.rotation.y = Math.PI
-        this.clone.position.x = index * 2
+          this.clone.rotation.y = Math.PI
 
-        this.group_1.add(this.clone)
+          this.clone.position.x = i % 2 == 0 ? y * 2 + 1 : y * 2
+          this.clone.position.z = i * this.vDist
+
+          this.group_main.add(this.clone)
+        }
       }
     })
 
     this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf) => {
       this.house_2 = gltf.scene
 
-      for (let index = 0; index < 5; index++) {
-        this.clone = this.house_2.clone()
+      for (let i = 0; i < this.vCount; i++) {
+        for (let y = 0; y < this.hCount; y++) {
+          this.clone = this.house_2.clone()
 
-        this.clone.rotation.y = Math.PI
-        this.clone.position.x = index * 2 + 1
+          this.clone.rotation.y = Math.PI
 
-        this.group_2.add(this.clone)
+          this.clone.position.x = i % 2 == 0 ? y * 2 + 2 : y * 2 + 1
+          this.clone.position.z = i * this.vDist
+
+          this.group_main.add(this.clone)
+        }
       }
     })
 
@@ -129,16 +154,28 @@ export default class WebGL {
 
     // AFTER LOAD
     this.manager.onLoad = () => {
-      this.groupSize = new THREE.Box3().setFromObject(this.group_1).getSize(new THREE.Vector3())
+      this.groupSize = new THREE.Box3().setFromObject(this.group_main).getSize(new THREE.Vector3())
 
-      this.group_1.position.x = -this.groupSize.x / 2
-      this.group_2.position.x = -this.groupSize.x / 2
+      this.group_main.position.x = -this.groupSize.x / 2
+      this.group_main.position.z = -this.groupSize.z / 2
+
+      this.loadedForAnimation = true
     }
   }
 
   render() {
     this.time += 0.05
     window.requestAnimationFrame(this.render.bind(this))
+
+    this.group_main.position.z += 0.0025
+
+    if (this.loadedForAnimation) {
+      this.scene.children[0].children.forEach((house) => {
+        if (house.getWorldPosition(this.target).z > 2.5) {
+          house.position.z -= this.vDist * this.vCount
+        }
+      })
+    }
 
     this.renderer.render(this.scene, this.camera)
   }

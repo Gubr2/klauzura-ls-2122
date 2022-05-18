@@ -4,6 +4,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Group } from 'three'
 import Stats from 'stats.js'
+import gsap from 'gsap'
 
 export default class WebGL {
   constructor(options) {
@@ -78,11 +79,15 @@ export default class WebGL {
     // Flags
     this.loadedForAnimation = false
 
+    // Empty Variables
+    this.lightObject
+    this.mouseX
+
     // Functions
     this.resize()
     this.setupResize()
-    this.addHouses()
-    this.addLightObject()
+    this.mouseMovement()
+    this.promises()
     this.render()
   }
 
@@ -99,92 +104,111 @@ export default class WebGL {
     this.camera.updateProjectionMatrix()
   }
 
+  mouseMovement() {
+    document.addEventListener('mousemove', (e) => {
+      this.mouseX = e.pageX / this.width
+    })
+  }
+
   addHouses() {
-    // GROUPS
-    this.group_main = new THREE.Group()
+    return new Promise((resolve) => {
+      // GROUPS
+      this.group_main = new THREE.Group()
 
-    this.scene.add(this.group_main)
+      this.scene.add(this.group_main)
 
-    // GLTF
-    this.loader = new GLTFLoader(this.manager)
+      // GLTF
+      this.loader = new GLTFLoader(this.manager)
 
-    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
-      this.house_1 = gltf.scene
+      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+        this.house_1 = gltf.scene
 
-      for (let i = 0; i < this.vCount; i++) {
-        for (let y = 0; y < this.hCount; y++) {
-          this.clone = this.house_1.clone()
+        for (let i = 0; i < this.vCount; i++) {
+          for (let y = 0; y < this.hCount; y++) {
+            this.clone = this.house_1.clone()
 
-          this.clone.rotation.y = Math.PI
+            this.clone.rotation.y = Math.PI
 
-          this.clone.position.x = i % 2 == 0 ? y * 2 + 1 : y * 2
-          this.clone.position.z = i * this.vDist
+            this.clone.position.x = i % 2 == 0 ? y * 2 + 1 : y * 2
+            this.clone.position.z = i * this.vDist
 
-          this.group_main.add(this.clone)
+            this.group_main.add(this.clone)
+          }
         }
+      })
+
+      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf) => {
+        this.house_2 = gltf.scene
+
+        for (let i = 0; i < this.vCount; i++) {
+          for (let y = 0; y < this.hCount; y++) {
+            this.clone = this.house_2.clone()
+
+            this.clone.rotation.y = Math.PI
+
+            this.clone.position.x = i % 2 == 0 ? y * 2 + 2 : y * 2 + 1
+            this.clone.position.z = i * this.vDist
+
+            this.group_main.add(this.clone)
+          }
+        }
+      })
+
+      // this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+      //   this.house_1 = gltf.scene
+      //   // this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
+      //   // this.texture.flipY = false
+      //   // this.house_1.traverse((o) => {
+      //   //   console.log(o)
+      //   //   if (o.isMesh) {
+      //   //     o.material.map = this.texture
+      //   //     o.material = new THREE.MeshNormalMaterial()
+      //   //   }
+      //   // })
+      //   this.group.add(this.house_1)
+
+      //   this.house_1.traverse((o) => {
+      //     console.log(o)
+      //     // if (o.isMesh) {
+      //     //   o.material.map = this.texture
+      //     //   o.material = new THREE.MeshNormalMaterial()
+      //     // }
+      //   })
+      // })
+
+      // LIGHTS
+      this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
+      this.scene.add(this.light)
+
+      // AFTER LOAD
+      this.manager.onLoad = () => {
+        this.groupSize = new THREE.Box3().setFromObject(this.group_main).getSize(new THREE.Vector3())
+
+        this.group_main.position.x = -this.groupSize.x / 2
+        this.group_main.position.z = -this.groupSize.z / 2
+
+        resolve()
       }
     })
-
-    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf) => {
-      this.house_2 = gltf.scene
-
-      for (let i = 0; i < this.vCount; i++) {
-        for (let y = 0; y < this.hCount; y++) {
-          this.clone = this.house_2.clone()
-
-          this.clone.rotation.y = Math.PI
-
-          this.clone.position.x = i % 2 == 0 ? y * 2 + 2 : y * 2 + 1
-          this.clone.position.z = i * this.vDist
-
-          this.group_main.add(this.clone)
-        }
-      }
-    })
-
-    // this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
-    //   this.house_1 = gltf.scene
-    //   // this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/Color_1-min.png')
-    //   // this.texture.flipY = false
-    //   // this.house_1.traverse((o) => {
-    //   //   console.log(o)
-    //   //   if (o.isMesh) {
-    //   //     o.material.map = this.texture
-    //   //     o.material = new THREE.MeshNormalMaterial()
-    //   //   }
-    //   // })
-    //   this.group.add(this.house_1)
-
-    //   this.house_1.traverse((o) => {
-    //     console.log(o)
-    //     // if (o.isMesh) {
-    //     //   o.material.map = this.texture
-    //     //   o.material = new THREE.MeshNormalMaterial()
-    //     // }
-    //   })
-    // })
-
-    // LIGHTS
-    this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
-    this.scene.add(this.light)
-
-    // AFTER LOAD
-    this.manager.onLoad = () => {
-      this.groupSize = new THREE.Box3().setFromObject(this.group_main).getSize(new THREE.Vector3())
-
-      this.group_main.position.x = -this.groupSize.x / 2
-      this.group_main.position.z = -this.groupSize.z / 2
-
-      this.loadedForAnimation = true
-    }
   }
 
   addLightObject() {
-    this.lightObject = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+    return new Promise((resolve) => {
+      this.lightObject = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 5), new THREE.MeshStandardMaterial({ color: 0xffffff }))
 
-    this.lightObject.position.y = 0.05
+      this.lightObject.position.y = 0.1
 
-    this.scene.add(this.lightObject)
+      this.scene.add(this.lightObject)
+
+      resolve()
+    })
+  }
+
+  promises() {
+    Promise.all([this.addHouses(), this.addLightObject()]).then(() => {
+      console.log('resolved')
+      this.loadedForAnimation = true
+    })
   }
 
   render() {
@@ -193,7 +217,7 @@ export default class WebGL {
     this.time += 0.05
     window.requestAnimationFrame(this.render.bind(this))
 
-    this.group_main.position.z += 0.0025
+    this.group_main.position.z += 0.005
 
     if (this.loadedForAnimation) {
       this.scene.children[0].children.forEach((house) => {
@@ -201,6 +225,11 @@ export default class WebGL {
           house.position.z -= this.vDist * this.vCount
         }
       })
+
+      this.lightObject.position.y += Math.sin(this.time) * 0.0015
+      this.lightObject.position.x = (this.mouseX - 0.5) * 0.05
+
+      console.log(this.lightObject.position.x)
     }
 
     this.camera.lookAt(0, 0, 0)

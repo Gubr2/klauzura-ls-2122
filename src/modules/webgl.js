@@ -47,7 +47,6 @@ export default class WebGL {
     this.setupResize()
     this.addObjects()
     this.render()
-    this.loadingManager()
   }
 
   setupResize() {
@@ -64,24 +63,43 @@ export default class WebGL {
   }
 
   addObjects() {
-    // Main Grop
-    this.group = new THREE.Group()
-    this.scene.add(this.group)
+    // ---> Main Group
+    this.group_1 = new THREE.Group()
+    this.group_2 = new THREE.Group()
+
+    this.scene.add(this.group_1)
+    this.scene.add(this.group_2)
 
     // GLTF
     this.loader = new GLTFLoader(this.manager)
 
-    for (let index = 0; index < 3; index++) {
-      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
-        this.house_1 = gltf.scene
-        this.group.add(this.house_1)
+    // 0.83809
 
-        this.house_1.position.x = index
+    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+      this.house_1 = gltf.scene
 
-        console.log(this.house_1)
-        // this.house_1.position.z = (index / 4) * 3
-      })
-    }
+      for (let index = 0; index < 5; index++) {
+        this.clone = this.house_1.clone()
+
+        this.clone.rotation.y = Math.PI
+        this.clone.position.x = index * 2
+
+        this.group_1.add(this.clone)
+      }
+    })
+
+    this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf) => {
+      this.house_2 = gltf.scene
+
+      for (let index = 0; index < 5; index++) {
+        this.clone = this.house_2.clone()
+
+        this.clone.rotation.y = Math.PI
+        this.clone.position.x = index * 2 + 1
+
+        this.group_2.add(this.clone)
+      }
+    })
 
     // this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
     //   this.house_1 = gltf.scene
@@ -108,23 +126,13 @@ export default class WebGL {
     // LIGHTS
     this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
     this.scene.add(this.light)
-  }
 
-  loadingManager() {
-    this.manager.onStart = function (url, itemsLoaded, itemsTotal) {
-      // console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.')
-    }
+    // AFTER LOAD
+    this.manager.onLoad = () => {
+      this.groupSize = new THREE.Box3().setFromObject(this.group_1).getSize(new THREE.Vector3())
 
-    this.manager.onLoad = function () {
-      // console.log(this.house_1)
-    }
-
-    this.manager.onProgress = function (url, itemsLoaded, itemsTotal) {
-      console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.')
-    }
-
-    this.manager.onError = function (url) {
-      console.log('There was an error loading ' + url)
+      this.group_1.position.x = -this.groupSize.x / 2
+      this.group_2.position.x = -this.groupSize.x / 2
     }
   }
 

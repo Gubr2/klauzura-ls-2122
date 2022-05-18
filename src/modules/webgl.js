@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Group } from 'three'
+import Stats from 'stats.js'
 
 export default class WebGL {
   constructor(options) {
@@ -22,6 +23,20 @@ export default class WebGL {
     this.fogColor = 0xf5eedf
 
     ///////////////////////////////////////////////
+
+    //
+    // STATS
+    //
+
+    this.stats = new Stats()
+    this.stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(this.stats.dom)
+
+    ///////////////////////////////////////////////
+
+    //
+    // THREE
+    //
 
     // Base
 
@@ -51,7 +66,7 @@ export default class WebGL {
 
     // Controls
 
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     // Time
 
@@ -66,7 +81,8 @@ export default class WebGL {
     // Functions
     this.resize()
     this.setupResize()
-    this.addObjects()
+    this.addHouses()
+    this.addLightObject()
     this.render()
   }
 
@@ -83,7 +99,7 @@ export default class WebGL {
     this.camera.updateProjectionMatrix()
   }
 
-  addObjects() {
+  addHouses() {
     // GROUPS
     this.group_main = new THREE.Group()
 
@@ -163,7 +179,17 @@ export default class WebGL {
     }
   }
 
+  addLightObject() {
+    this.lightObject = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+
+    this.lightObject.position.y = 0.05
+
+    this.scene.add(this.lightObject)
+  }
+
   render() {
+    this.stats.begin()
+
     this.time += 0.05
     window.requestAnimationFrame(this.render.bind(this))
 
@@ -177,6 +203,10 @@ export default class WebGL {
       })
     }
 
+    this.camera.lookAt(0, 0, 0)
+
     this.renderer.render(this.scene, this.camera)
+
+    this.stats.end()
   }
 }

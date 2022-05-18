@@ -2,7 +2,9 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { Group } from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import Stats from 'stats.js'
 import gsap from 'gsap'
 
@@ -44,7 +46,7 @@ export default class WebGL {
     this.container = options.dom
 
     this.scene = new THREE.Scene()
-    this.scene.fog = new THREE.Fog(this.fogColor, 4, 8)
+    this.scene.fog = new THREE.Fog(this.fogColor, 4, 9)
 
     this.width = this.container.offsetWidth
     this.height = this.container.offsetHeight
@@ -64,6 +66,19 @@ export default class WebGL {
     // this.renderer.toneMapping = THREE.ReinhardToneMapping
 
     this.container.appendChild(this.renderer.domElement)
+
+    // Composer
+    this.composer = new EffectComposer(this.renderer)
+    this.composer.setSize(this.width, this.height)
+
+    this.renderPass = new RenderPass(this.scene, this.camera)
+    this.composer.addPass(this.renderPass)
+
+    this.unrealBloomPass = new UnrealBloomPass()
+    this.unrealBloomPass.strength = 2
+    this.unrealBloomPass.threshold = 0.99
+    this.unrealBloomPass.radius = 1
+    this.composer.addPass(this.unrealBloomPass)
 
     // Controls
 
@@ -100,6 +115,7 @@ export default class WebGL {
     this.height = this.container.offsetHeight
 
     this.renderer.setSize(this.width, this.height)
+    this.composer.setSize(this.width, this.height)
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
   }
@@ -194,10 +210,21 @@ export default class WebGL {
 
   addLightObject() {
     return new Promise((resolve) => {
-      this.lightObject = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 5), new THREE.MeshStandardMaterial({ color: 0xffffff }))
+      this.light = new THREE.PointLight(0xffffff, 1.5, 4)
+
+      this.lightObject = new THREE.Mesh(
+        new THREE.SphereGeometry(0.015, 10, 5),
+        new THREE.MeshStandardMaterial({
+          //
+          color: 0xffffff,
+          emissive: 0xffffff,
+          emissiveIntensity: 1,
+        })
+      )
 
       this.lightObject.position.y = 0.1
 
+      this.scene.add(this.light)
       this.scene.add(this.lightObject)
 
       resolve()
@@ -217,7 +244,7 @@ export default class WebGL {
     this.time += 0.05
     window.requestAnimationFrame(this.render.bind(this))
 
-    this.group_main.position.z += 0.005
+    this.group_main.position.z += 0.0035
 
     if (this.loadedForAnimation) {
       this.scene.children[0].children.forEach((house) => {
@@ -226,15 +253,16 @@ export default class WebGL {
         }
       })
 
+      this.light.position.y += Math.sin(this.time) * 0.0015
       this.lightObject.position.y += Math.sin(this.time) * 0.0015
-      this.lightObject.position.x = (this.mouseX - 0.5) * 0.05
+      // this.lightObject.position.x = (this.mouseX - 0.5) * 0.05
 
       console.log(this.lightObject.position.x)
     }
 
     this.camera.lookAt(0, 0, 0)
 
-    this.renderer.render(this.scene, this.camera)
+    this.composer.render()
 
     this.stats.end()
   }

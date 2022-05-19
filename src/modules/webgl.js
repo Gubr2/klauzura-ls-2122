@@ -18,7 +18,7 @@ export default class WebGL {
 
     this.vDist = 0.83809
     this.hCount = 3
-    this.vCount = 7
+    this.vCount = 8
 
     this.target = new THREE.Vector3()
 
@@ -95,8 +95,10 @@ export default class WebGL {
     this.loadedForAnimation = false
 
     // Empty Variables
+    this.lightSource
     this.lightObject
     this.mouseX
+    this.distance
 
     // Functions
     this.resize()
@@ -210,7 +212,7 @@ export default class WebGL {
 
   addLightObject() {
     return new Promise((resolve) => {
-      this.light = new THREE.PointLight(0xffffff, 1.5, 4)
+      this.lightSource = new THREE.PointLight(0xffffff, 2, 1)
 
       this.lightObject = new THREE.Mesh(
         new THREE.SphereGeometry(0.015, 10, 5),
@@ -222,9 +224,10 @@ export default class WebGL {
         })
       )
 
-      this.lightObject.position.y = 0.1
+      this.lightObject.position.y = 0.2
+      this.lightSource.position.y = 0.2
 
-      this.scene.add(this.light)
+      this.scene.add(this.lightSource)
       this.scene.add(this.lightObject)
 
       resolve()
@@ -253,11 +256,17 @@ export default class WebGL {
         }
       })
 
-      this.light.position.y += Math.sin(this.time) * 0.0015
-      this.lightObject.position.y += Math.sin(this.time) * 0.0015
-      // this.lightObject.position.x = (this.mouseX - 0.5) * 0.05
+      this.mouseXConverted = (this.mouseX - 0.5) * 1.5
 
-      console.log(this.lightObject.position.x)
+      this.lightSource.position.y += Math.sin(this.time) * 0.0015
+      this.lightObject.position.y += Math.sin(this.time) * 0.0015
+      // this.lightSource.position.x += this.mouseXConverted / 10
+      // this.lightObject.position.x += this.mouseXConverted / 10
+
+      this.distance = this.lightObject.position.x - this.mouseXConverted
+
+      this.lightSource.position.x -= this.distance / 50
+      this.lightObject.position.x -= this.distance / 50
     }
 
     this.camera.lookAt(0, 0, 0)

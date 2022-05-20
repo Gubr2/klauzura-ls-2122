@@ -33,9 +33,30 @@ table {
   border-spacing: 0;
 }
 
+body {
+  overflow: hidden;
+}
+
 .webgl {
   width: 100vw;
   height: 100vh;
+}
+
+video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: .75;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+video .clouds {
+  mix-blend-mode: screen;
 }
 
 /*# sourceMappingURL=index.38ec9247.css.map */

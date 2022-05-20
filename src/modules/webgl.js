@@ -14,16 +14,35 @@ export default class WebGL {
     // SETTINGS
     //
 
-    // ---> Houses
+    // ---> Global
+    this.globalSpeed = 0.0035
 
+    // ---> Houses
     this.vDist = 0.83809
-    this.hCount = 3
+    this.hCount = 4
     this.vCount = 8
 
     this.target = new THREE.Vector3()
 
     // ---> Fog
     this.fogColor = 0xf5eedf
+
+    // ---> Light Object
+    this.lightObjectV = 0.2
+
+    // ---> Video
+    this.video = document.querySelector('video')
+    this.video.playbackRate = 2
+
+    // ---> Particles
+    this.particlesCount = 10
+    this.particlesMinSize = 0.01
+    this.particlesMaxSize = 0.01
+    this.particlesV = 0
+
+    // ---> Hover
+    this.hoverCount = 5
+    this.hoverSize = 0.1
 
     ///////////////////////////////////////////////
 
@@ -67,6 +86,10 @@ export default class WebGL {
 
     this.container.appendChild(this.renderer.domElement)
 
+    // Controls
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+
     // Composer
     this.composer = new EffectComposer(this.renderer)
     this.composer.setSize(this.width, this.height)
@@ -80,10 +103,6 @@ export default class WebGL {
     this.unrealBloomPass.radius = 1
     this.composer.addPass(this.unrealBloomPass)
 
-    // Controls
-
-    // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-
     // Time
 
     this.time = 0
@@ -93,6 +112,8 @@ export default class WebGL {
 
     // Flags
     this.loadedForAnimation = false
+    this.hoverFlag = true
+    this.objectFlag = true
 
     // Empty Variables
     this.lightSource
@@ -131,9 +152,10 @@ export default class WebGL {
   addHouses() {
     return new Promise((resolve) => {
       // GROUPS
-      this.group_main = new THREE.Group()
+      this.group_houses = new THREE.Group()
+      this.group_houses.name = 'group_houses'
 
-      this.scene.add(this.group_main)
+      this.scene.add(this.group_houses)
 
       // GLTF
       this.loader = new GLTFLoader(this.manager)
@@ -150,7 +172,7 @@ export default class WebGL {
             this.clone.position.x = i % 2 == 0 ? y * 2 + 1 : y * 2
             this.clone.position.z = i * this.vDist
 
-            this.group_main.add(this.clone)
+            this.group_houses.add(this.clone)
           }
         }
       })
@@ -167,7 +189,7 @@ export default class WebGL {
             this.clone.position.x = i % 2 == 0 ? y * 2 + 2 : y * 2 + 1
             this.clone.position.z = i * this.vDist
 
-            this.group_main.add(this.clone)
+            this.group_houses.add(this.clone)
           }
         }
       })
@@ -200,10 +222,10 @@ export default class WebGL {
 
       // AFTER LOAD
       this.manager.onLoad = () => {
-        this.groupSize = new THREE.Box3().setFromObject(this.group_main).getSize(new THREE.Vector3())
+        this.groupSize = new THREE.Box3().setFromObject(this.group_houses).getSize(new THREE.Vector3())
 
-        this.group_main.position.x = -this.groupSize.x / 2
-        this.group_main.position.z = -this.groupSize.z / 2
+        this.group_houses.position.x = -this.groupSize.x / 2
+        this.group_houses.position.z = -this.groupSize.z / 2
 
         resolve()
       }
@@ -224,8 +246,8 @@ export default class WebGL {
         })
       )
 
-      this.lightObject.position.y = 0.2
-      this.lightSource.position.y = 0.2
+      this.lightObject.position.y = this.lightObjectV
+      this.lightSource.position.y = this.lightObjectV
 
       this.scene.add(this.lightSource)
       this.scene.add(this.lightObject)
@@ -234,12 +256,128 @@ export default class WebGL {
     })
   }
 
+  addHoverParticles() {
+    return new Promise((resolve) => {
+      this.group_particles = new THREE.Group()
+      this.group_particles.name = 'group_paricles'
+
+      this.group_particles.position.y = this.particlesV
+
+      this.scene.add(this.group_particles)
+
+      for (let i = 0; i < this.particlesCount; i++) {
+        this.particle = new THREE.Mesh(new THREE.BoxGeometry(this.particlesSize, this.particlesSize, this.particlesSize), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+        this.group_particles.add(this.particle)
+
+        this.particle.position.x = this.randomGenerator(-0.1, 0.1)
+        this.particle.position.z = this.randomGenerator(-0.1, 0.1)
+
+        this.size = this.randomGenerator(0.0025, 0.0075)
+        this.particle.scale.set(this.size, this.size, this.size)
+      }
+
+      resolve()
+    })
+  }
+
+  addHoverObjects() {
+    return new Promise((resolve) => {
+      this.group_hover = new THREE.Group()
+      this.group_hover.name = 'group_hover'
+
+      this.group_hover.position.z = -this.vDist * 2
+
+      this.scene.add(this.group_hover)
+
+      for (let i = 0; i < this.hoverCount; i++) {
+        this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+        this.group_hover.add(this.hoverObject)
+
+        this.hoverObject.position.z = -i * this.vDist + this.vDist / 2 - this.hoverSize / 2
+        this.hoverObject.position.x = this.randomGenerator(-1, 1)
+        this.hoverObject.rotation.x = Math.PI / -2
+        this.hoverObject.position.y = 0.1
+      }
+
+      resolve()
+    })
+  }
+
+  randomGenerator(min, max) {
+    return Math.random() * (max - min) + min
+  }
+
   promises() {
-    Promise.all([this.addHouses(), this.addLightObject()]).then(() => {
+    Promise.all([
+      //
+      this.addHouses(),
+      this.addLightObject(),
+      this.addHoverParticles(),
+      this.addHoverObjects(),
+    ]).then(() => {
       console.log('resolved')
       this.loadedForAnimation = true
     })
   }
+
+  //
+  //  RENDER FUNCTIONS
+  //
+
+  refreshHousePosition() {
+    this.scene.getObjectByName('group_houses').children.forEach((house) => {
+      if (house.getWorldPosition(this.target).z > 2.5) {
+        house.position.z -= this.vDist * this.vCount
+      }
+    })
+  }
+
+  hoverOnObjects() {
+    this.scene.getObjectByName('group_hover').children.forEach((hoverObject) => {
+      // [] --- Refresh Object Position
+      if (hoverObject.getWorldPosition(this.target).z > 2) {
+        hoverObject.position.z -= this.vDist * this.hoverCount
+      }
+
+      // [] --- Reset & Move Particles
+      if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.1) {
+        this.group_particles.position.x = hoverObject.position.x
+      }
+
+      // [] --- Reveal Object
+      if (
+        hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize
+        //
+      ) {
+        this.vDistance = this.lightObject.position.x - this.group_particles.position.y
+
+        this.group_particles.children.forEach((particle) => {
+          particle.position.x *= 0.95
+          particle.position.z *= 0.95
+
+          particle.position.y += this.vDistance / 50
+        })
+
+        // Slow Down
+        this.globalSpeed *= 0.95
+        this.video.playbackRate = 0
+
+        this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
+
+        this.lightSource.position.x -= this.hDistance / 50
+        this.lightObject.position.x -= this.hDistance / 50
+
+        this.objectFlag = false
+      }
+    })
+  }
+
+  //
+  // RENDER
+  //
 
   render() {
     this.stats.begin()
@@ -247,31 +385,36 @@ export default class WebGL {
     this.time += 0.05
     window.requestAnimationFrame(this.render.bind(this))
 
-    this.group_main.position.z += 0.0035
+    this.group_houses.position.z += this.globalSpeed
+    this.group_hover.position.z += this.globalSpeed
 
     if (this.loadedForAnimation) {
-      this.scene.children[0].children.forEach((house) => {
-        if (house.getWorldPosition(this.target).z > 2.5) {
-          house.position.z -= this.vDist * this.vCount
-        }
-      })
+      this.refreshHousePosition()
+
+      // ---> Hover Object & Particles
+      this.hoverOnObjects()
+
+      // ---> Move Hover Particles
 
       this.mouseXConverted = (this.mouseX - 0.5) * 1.5
 
       this.lightSource.position.y += Math.sin(this.time) * 0.0015
       this.lightObject.position.y += Math.sin(this.time) * 0.0015
+      this.group_particles.position.y += Math.sin(this.time) * 0.0015
       // this.lightSource.position.x += this.mouseXConverted / 10
       // this.lightObject.position.x += this.mouseXConverted / 10
 
-      this.distance = this.lightObject.position.x - this.mouseXConverted
+      if (this.objectFlag) {
+        this.distance = this.lightObject.position.x - this.mouseXConverted * 1.5
 
-      this.lightSource.position.x -= this.distance / 50
-      this.lightObject.position.x -= this.distance / 50
+        this.lightSource.position.x -= this.distance / 50
+        this.lightObject.position.x -= this.distance / 50
+      }
+
+      this.camera.lookAt(0, 0, 0)
+
+      this.composer.render()
     }
-
-    this.camera.lookAt(0, 0, 0)
-
-    this.composer.render()
 
     this.stats.end()
   }

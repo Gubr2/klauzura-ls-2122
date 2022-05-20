@@ -29,16 +29,16 @@ export default class WebGL {
 
     // ---> Light Object
     this.lightObjectV = 0.2
+    this.lightObjectGrow = 0.025
 
     // ---> Video
     this.video = document.querySelector('video')
     this.video.playbackRate = 2
 
     // ---> Particles
-    this.particlesCount = 10
+    this.particlesCount = 20
     this.particlesMinSize = 0.01
     this.particlesMaxSize = 0.01
-    this.particlesV = 0
 
     // ---> Hover
     this.hoverCount = 5
@@ -261,16 +261,17 @@ export default class WebGL {
       this.group_particles = new THREE.Group()
       this.group_particles.name = 'group_paricles'
 
-      this.group_particles.position.y = this.particlesV
+      this.group_particles.position.y = this.lightObjectV
 
       this.scene.add(this.group_particles)
 
       for (let i = 0; i < this.particlesCount; i++) {
-        this.particle = new THREE.Mesh(new THREE.BoxGeometry(this.particlesSize, this.particlesSize, this.particlesSize), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+        this.particle = new THREE.Mesh(new THREE.BoxGeometry(this.particlesSize, this.particlesSize, this.particlesSize), new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0 }))
         this.group_particles.add(this.particle)
 
-        this.particle.position.x = this.randomGenerator(-0.1, 0.1)
-        this.particle.position.z = this.randomGenerator(-0.1, 0.1)
+        this.particle.position.x = this.randomGenerator(-0.2, 0.2)
+        this.particle.position.z = this.randomGenerator(-0.2, 0.2)
+        this.particle.position.y = -this.lightObjectV
 
         this.size = this.randomGenerator(0.0025, 0.0075)
         this.particle.scale.set(this.size, this.size, this.size)
@@ -290,7 +291,7 @@ export default class WebGL {
       this.scene.add(this.group_hover)
 
       for (let i = 0; i < this.hoverCount; i++) {
-        this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff }))
+        this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false }))
         this.group_hover.add(this.hoverObject)
 
         this.hoverObject.position.z = -i * this.vDist + this.vDist / 2 - this.hoverSize / 2
@@ -333,15 +334,21 @@ export default class WebGL {
   }
 
   hoverOnObjects() {
-    this.scene.getObjectByName('group_hover').children.forEach((hoverObject) => {
+    this.scene.getObjectByName('group_hover').children.forEach((hoverObject, index) => {
       // [] --- Refresh Object Position
       if (hoverObject.getWorldPosition(this.target).z > 2) {
         hoverObject.position.z -= this.vDist * this.hoverCount
       }
 
-      // [] --- Reset & Move Particles
-      if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.1) {
+      // [] --- Move Particles
+      if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < this.vDist / 2) {
         this.group_particles.position.x = hoverObject.position.x
+        this.group_particles.position.z += this.globalSpeed
+      }
+
+      // [] --- Reset Particles
+      if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.25) {
+        this.group_particles.position.z = -this.vDist / 2
       }
 
       // [] --- Reveal Object
@@ -352,27 +359,48 @@ export default class WebGL {
         hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize
         //
       ) {
-        this.vDistance = this.lightObject.position.x - this.group_particles.position.y
-
-        this.group_particles.children.forEach((particle) => {
-          particle.position.x *= 0.95
-          particle.position.z *= 0.95
-
-          particle.position.y += this.vDistance / 50
+        this.group_particles.children.forEach((particle, index) => {
+          setTimeout(() => {
+            particle.position.x *= 0.95
+            particle.position.z *= 0.95
+            particle.position.y *= 0.95
+          }, index * 20)
         })
 
         // Slow Down
-        this.globalSpeed *= 0.95
-        this.video.playbackRate = 0
-
-        this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
-
-        this.lightSource.position.x -= this.hDistance / 50
-        this.lightObject.position.x -= this.hDistance / 50
-
-        this.objectFlag = false
+        this.hoverAnimations(hoverObject)
       }
     })
+  }
+
+  hoverAnimations(hoverObject) {
+    // ---> Global
+    this.globalSpeed *= 0.97
+
+    // ---> Video
+    this.video.playbackRate = 0
+
+    // ---> Light
+    this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
+    this.vDistance = this.lightObject.position.z - hoverObject.getWorldPosition(this.target).z
+
+    this.lightObjectGrow *= 0.95
+
+    this.lightSource.position.x -= this.hDistance / 50
+    this.lightObject.position.x -= this.hDistance / 50
+
+    gsap.to(this.lightObject.scale, {
+      x: 1.5,
+      y: 1.5,
+      z: 1.5,
+      delay: 0.5,
+      duration: 2,
+      ease: 'power2',
+    })
+
+    this.group_particles.position.z = -this.vDistance
+
+    this.objectFlag = false
   }
 
   //

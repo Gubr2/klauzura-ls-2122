@@ -579,6 +579,7 @@ class WebGL {
         this.hoverUnhideFactor = 4;
         this.hoverLineHeight = 0.6;
         this.hoverLineThickness = 0.0075;
+        this.hoverTextShift = 0.05;
         ///////////////////////////////////////////////
         ///////////////////////////////////////////////
         ///////////////////////////////////////////////
@@ -807,25 +808,58 @@ class WebGL {
                 this.cross_1.position.x = this.positionH;
                 this.cross_1.position.y = this.hoverLineHeight / 2;
                 // ---> Text
-                this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font)=>{
-                    this.textBottom = new _three.Mesh(new _textGeometryJs.TextGeometry('Never made it into the basement.', {
-                        font: font,
-                        size: 0.5,
-                        height: 0.2
-                    }), new _three.MeshBasicMaterial({
-                        color: 0xffffff,
-                        transparent: true,
-                        opacity: 1
-                    }));
-                    this.textBottom.name = 'text_bottom';
-                    this.group_hover.add(this.textBottom);
-                    this.textBottom.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
-                    this.textBottom.position.x = this.positionH;
-                    this.textBottom.position.y = this.hoverLineHeight / 2;
-                    this.textBottom.scale.set(0.1, 0.1, 0.1);
-                });
+                this.textGenerator(this.positionH, i);
             }
             resolve();
+        });
+    }
+    textGenerator(positionH, index) {
+        this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font)=>{
+            // ---> Number
+            this.textNumber = new _three.Mesh(new _textGeometryJs.TextGeometry(`0${index + 1}`, {
+                font: font,
+                size: 0.025,
+                height: 0
+            }), new _three.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1
+            }));
+            this.textNumber.name = 'text_number';
+            this.group_hover.add(this.textNumber);
+            this.textNumber.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+            this.textNumber.position.x = positionH + this.hoverTextShift;
+            this.textNumber.position.y = this.hoverLineHeight / 1.2;
+            // ---> Top
+            this.textTop = new _three.Mesh(new _textGeometryJs.TextGeometry('Never made it', {
+                font: font,
+                size: 0.05,
+                height: 0
+            }), new _three.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1
+            }));
+            this.textTop.name = 'text_top';
+            this.group_hover.add(this.textTop);
+            this.textTop.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+            this.textTop.position.x = positionH + this.hoverTextShift;
+            this.textTop.position.y = this.hoverLineHeight / 1.6;
+            // ---> Bottom
+            this.textBottom = new _three.Mesh(new _textGeometryJs.TextGeometry('into the basement.', {
+                font: font,
+                size: 0.05,
+                height: 0
+            }), new _three.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1
+            }));
+            this.textBottom.name = 'text_bottom';
+            this.group_hover.add(this.textBottom);
+            this.textBottom.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+            this.textBottom.position.x = positionH + this.hoverTextShift;
+            this.textBottom.position.y = this.hoverLineHeight / 2;
         });
     }
     randomGenerator(min, max) {

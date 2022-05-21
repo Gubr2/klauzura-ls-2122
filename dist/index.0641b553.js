@@ -568,12 +568,14 @@ class WebGL {
         this.video = document.querySelector('video');
         this.video.playbackRate = 2;
         // ---> Particles
-        this.particlesCount = 20;
+        this.particlesCount = 30;
         this.particlesMinSize = 0.01;
         this.particlesMaxSize = 0.01;
         // ---> Hover
         this.hoverCount = 5;
         this.hoverSize = 0.1;
+        this.hoverUnhideFactor = 4;
+        this.hoverLineHeight = 0.5;
         ///////////////////////////////////////////////
         //
         // STATS
@@ -605,7 +607,7 @@ class WebGL {
         // this.renderer.toneMapping = THREE.ReinhardToneMapping
         this.container.appendChild(this.renderer.domElement);
         // Controls
-        this.controls = new _orbitControlsJs.OrbitControls(this.camera, this.renderer.domElement);
+        // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
         // Composer
         this.composer = new _effectComposerJs.EffectComposer(this.renderer);
         this.composer.setSize(this.width, this.height);
@@ -623,7 +625,7 @@ class WebGL {
         // Flags
         this.loadedForAnimation = false;
         this.hoverFlag = true;
-        this.objectFlag = true;
+        this.mouseFlag = true;
         // Empty Variables
         this.lightSource;
         this.lightObject;
@@ -743,7 +745,7 @@ class WebGL {
                 this.particle.position.x = this.randomGenerator(-0.2, 0.2);
                 this.particle.position.z = this.randomGenerator(-0.2, 0.2);
                 this.particle.position.y = -this.lightObjectV;
-                this.size = this.randomGenerator(0.0025, 0.0075);
+                this.size = 0;
                 this.particle.scale.set(this.size, this.size, this.size);
             }
             resolve();
@@ -759,13 +761,27 @@ class WebGL {
                 this.hoverObject = new _three.Mesh(new _three.PlaneGeometry(this.hoverSize, this.hoverSize), new _three.MeshBasicMaterial({
                     color: 0xffffff,
                     wireframe: true,
-                    visible: false
+                    visible: false,
+                    transparent: true,
+                    opacity: 1
                 }));
                 this.group_hover.add(this.hoverObject);
-                this.hoverObject.position.z = -i * this.vDist + this.vDist / 2 - this.hoverSize / 2;
-                this.hoverObject.position.x = this.randomGenerator(-1, 1);
+                this.positionH = this.randomGenerator(-1, 1);
+                this.hoverObject.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+                this.hoverObject.position.x = this.positionH;
                 this.hoverObject.rotation.x = Math.PI / -2;
                 this.hoverObject.position.y = 0.1;
+                this.texture = new _three.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png');
+                this.line = new _three.Mesh(new _three.PlaneGeometry(0.005, this.hoverLineHeight), new _three.MeshBasicMaterial({
+                    color: 0xffffff,
+                    visible: true,
+                    transparent: true,
+                    opacity: 0
+                }));
+                this.group_hover.add(this.line);
+                this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+                this.line.position.x = this.positionH;
+                this.line.position.y = this.hoverLineHeight / 2;
             }
             resolve();
         });
@@ -804,6 +820,15 @@ class WebGL {
             }
             // [] --- Reset Particles
             if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.25) this.group_particles.position.z = -this.vDist / 2;
+            // [] --- Unhide Object
+            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor) _gsapDefault.default.to(hoverObject.material, {
+                opacity: 0.25,
+                duration: 1
+            });
+            else _gsapDefault.default.to(hoverObject.material, {
+                opacity: 0,
+                duration: 1
+            });
             // [] --- Reveal Object
             if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize) {
                 this.group_particles.children.forEach((particle, index)=>{
@@ -811,7 +836,18 @@ class WebGL {
                         particle.position.x *= 0.95;
                         particle.position.z *= 0.95;
                         particle.position.y *= 0.95;
+                        this.particlesSize = this.randomGenerator(0.005, 0.01);
+                        _gsapDefault.default.to(particle.scale, {
+                            x: this.particlesSize,
+                            y: this.particlesSize,
+                            z: this.particlesSize,
+                            duration: 1
+                        });
                     }, index * 20);
+                    _gsapDefault.default.to(hoverObject.material, {
+                        opacity: 1,
+                        duration: 1
+                    });
                 });
                 // Slow Down
                 this.hoverAnimations(hoverObject);
@@ -819,10 +855,21 @@ class WebGL {
         });
     }
     hoverAnimations(hoverObject) {
+        //
+        // SLOW DOWN
+        //
         // ---> Global
-        this.globalSpeed *= 0.97;
+        this.globalSpeed *= 0.95;
         // ---> Video
         this.video.playbackRate = 0;
+        // ---> Camera
+        _gsapDefault.default.to(this.camera, {
+            zoom: 1.05,
+            duration: 5,
+            ease: 'power3'
+        });
+        this.camera.updateProjectionMatrix();
+        ///////////////////////////////
         // ---> Light
         this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x;
         this.vDistance = this.lightObject.position.z - hoverObject.getWorldPosition(this.target).z;
@@ -837,8 +884,8 @@ class WebGL {
             duration: 2,
             ease: 'power2'
         });
-        this.group_particles.position.z = -this.vDistance;
-        this.objectFlag = false;
+        this.group_particles.position.z *= 0.95;
+        this.mouseFlag = false;
     }
     //
     // RENDER
@@ -860,7 +907,7 @@ class WebGL {
             this.group_particles.position.y += Math.sin(this.time) * 0.0015;
             // this.lightSource.position.x += this.mouseXConverted / 10
             // this.lightObject.position.x += this.mouseXConverted / 10
-            if (this.objectFlag) {
+            if (this.mouseFlag) {
                 this.distance = this.lightObject.position.x - this.mouseXConverted * 1.5;
                 this.lightSource.position.x -= this.distance / 50;
                 this.lightObject.position.x -= this.distance / 50;

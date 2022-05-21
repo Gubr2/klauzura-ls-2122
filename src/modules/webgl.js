@@ -36,13 +36,15 @@ export default class WebGL {
     this.video.playbackRate = 2
 
     // ---> Particles
-    this.particlesCount = 20
+    this.particlesCount = 30
     this.particlesMinSize = 0.01
     this.particlesMaxSize = 0.01
 
     // ---> Hover
     this.hoverCount = 5
     this.hoverSize = 0.1
+    this.hoverUnhideFactor = 4
+    this.hoverLineHeight = 0.5
 
     ///////////////////////////////////////////////
 
@@ -88,7 +90,7 @@ export default class WebGL {
 
     // Controls
 
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     // Composer
     this.composer = new EffectComposer(this.renderer)
@@ -113,7 +115,7 @@ export default class WebGL {
     // Flags
     this.loadedForAnimation = false
     this.hoverFlag = true
-    this.objectFlag = true
+    this.mouseFlag = true
 
     // Empty Variables
     this.lightSource
@@ -273,7 +275,7 @@ export default class WebGL {
         this.particle.position.z = this.randomGenerator(-0.2, 0.2)
         this.particle.position.y = -this.lightObjectV
 
-        this.size = this.randomGenerator(0.0025, 0.0075)
+        this.size = 0
         this.particle.scale.set(this.size, this.size, this.size)
       }
 
@@ -291,13 +293,24 @@ export default class WebGL {
       this.scene.add(this.group_hover)
 
       for (let i = 0; i < this.hoverCount; i++) {
-        this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false }))
+        this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false, transparent: true, opacity: 1 }))
         this.group_hover.add(this.hoverObject)
 
-        this.hoverObject.position.z = -i * this.vDist + this.vDist / 2 - this.hoverSize / 2
-        this.hoverObject.position.x = this.randomGenerator(-1, 1)
+        this.positionH = this.randomGenerator(-1, 1)
+
+        this.hoverObject.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
+        this.hoverObject.position.x = this.positionH
         this.hoverObject.rotation.x = Math.PI / -2
         this.hoverObject.position.y = 0.1
+
+        this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png')
+
+        this.line = new THREE.Mesh(new THREE.PlaneGeometry(0.005, this.hoverLineHeight), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
+        this.group_hover.add(this.line)
+
+        this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
+        this.line.position.x = this.positionH
+        this.line.position.y = this.hoverLineHeight / 2
       }
 
       resolve()
@@ -351,6 +364,25 @@ export default class WebGL {
         this.group_particles.position.z = -this.vDist / 2
       }
 
+      // [] --- Unhide Object
+      if (
+        hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor &&
+        hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor &&
+        hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor &&
+        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor
+        //
+      ) {
+        gsap.to(hoverObject.material, {
+          opacity: 0.25,
+          duration: 1,
+        })
+      } else {
+        gsap.to(hoverObject.material, {
+          opacity: 0,
+          duration: 1,
+        })
+      }
+
       // [] --- Reveal Object
       if (
         hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize &&
@@ -364,7 +396,21 @@ export default class WebGL {
             particle.position.x *= 0.95
             particle.position.z *= 0.95
             particle.position.y *= 0.95
+
+            this.particlesSize = this.randomGenerator(0.005, 0.01)
+
+            gsap.to(particle.scale, {
+              x: this.particlesSize,
+              y: this.particlesSize,
+              z: this.particlesSize,
+              duration: 1,
+            })
           }, index * 20)
+
+          gsap.to(hoverObject.material, {
+            opacity: 1,
+            duration: 1,
+          })
         })
 
         // Slow Down
@@ -374,11 +420,25 @@ export default class WebGL {
   }
 
   hoverAnimations(hoverObject) {
+    //
+    // SLOW DOWN
+    //
+
     // ---> Global
-    this.globalSpeed *= 0.97
+    this.globalSpeed *= 0.95
 
     // ---> Video
     this.video.playbackRate = 0
+
+    // ---> Camera
+    gsap.to(this.camera, {
+      zoom: 1.05,
+      duration: 5,
+      ease: 'power3',
+    })
+    this.camera.updateProjectionMatrix()
+
+    ///////////////////////////////
 
     // ---> Light
     this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
@@ -398,9 +458,9 @@ export default class WebGL {
       ease: 'power2',
     })
 
-    this.group_particles.position.z = -this.vDistance
+    this.group_particles.position.z *= 0.95
 
-    this.objectFlag = false
+    this.mouseFlag = false
   }
 
   //
@@ -432,7 +492,7 @@ export default class WebGL {
       // this.lightSource.position.x += this.mouseXConverted / 10
       // this.lightObject.position.x += this.mouseXConverted / 10
 
-      if (this.objectFlag) {
+      if (this.mouseFlag) {
         this.distance = this.lightObject.position.x - this.mouseXConverted * 1.5
 
         this.lightSource.position.x -= this.distance / 50

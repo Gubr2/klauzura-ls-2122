@@ -543,6 +543,8 @@ var _orbitControlsJs = require("three/examples/jsm/controls/OrbitControls.js");
 var _effectComposerJs = require("three/examples/jsm/postprocessing/EffectComposer.js");
 var _renderPassJs = require("three/examples/jsm/postprocessing/RenderPass.js");
 var _unrealBloomPassJs = require("three/examples/jsm/postprocessing/UnrealBloomPass.js");
+var _fontLoaderJs = require("three/examples/jsm/loaders/FontLoader.js");
+var _textGeometryJs = require("three/examples/jsm/geometries/TextGeometry.js");
 var _statsJs = require("stats.js");
 var _statsJsDefault = parcelHelpers.interopDefault(_statsJs);
 var _gsap = require("gsap");
@@ -575,7 +577,10 @@ class WebGL {
         this.hoverCount = 5;
         this.hoverSize = 0.1;
         this.hoverUnhideFactor = 4;
-        this.hoverLineHeight = 0.5;
+        this.hoverLineHeight = 0.6;
+        this.hoverLineThickness = 0.0075;
+        ///////////////////////////////////////////////
+        ///////////////////////////////////////////////
         ///////////////////////////////////////////////
         //
         // STATS
@@ -631,6 +636,8 @@ class WebGL {
         this.lightObject;
         this.mouseX;
         this.distance;
+        // Fonts
+        this.fontLoader = new _fontLoaderJs.FontLoader();
         // Functions
         this.resize();
         this.setupResize();
@@ -758,6 +765,7 @@ class WebGL {
             this.group_hover.position.z = -this.vDist * 2;
             this.scene.add(this.group_hover);
             for(let i = 0; i < this.hoverCount; i++){
+                // ---> Hover Object
                 this.hoverObject = new _three.Mesh(new _three.PlaneGeometry(this.hoverSize, this.hoverSize), new _three.MeshBasicMaterial({
                     color: 0xffffff,
                     wireframe: true,
@@ -765,23 +773,57 @@ class WebGL {
                     transparent: true,
                     opacity: 1
                 }));
+                this.hoverObject.name = 'hover_object';
                 this.group_hover.add(this.hoverObject);
                 this.positionH = this.randomGenerator(-1, 1);
                 this.hoverObject.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
                 this.hoverObject.position.x = this.positionH;
                 this.hoverObject.rotation.x = Math.PI / -2;
                 this.hoverObject.position.y = 0.1;
-                this.texture = new _three.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png');
-                this.line = new _three.Mesh(new _three.PlaneGeometry(0.005, this.hoverLineHeight), new _three.MeshBasicMaterial({
+                // ---> Hover Line
+                this.alphaTexture = new _three.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png');
+                this.line = new _three.Mesh(new _three.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight), new _three.MeshBasicMaterial({
+                    color: 0xffffff,
+                    alphaMap: this.alphaTexture,
+                    visible: true,
+                    transparent: true,
+                    opacity: 0
+                }));
+                this.line.name = 'line';
+                this.group_hover.add(this.line);
+                this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+                this.line.position.x = this.positionH;
+                this.line.position.y = this.hoverLineHeight / 2;
+                // ---> Cross
+                this.cross_1 = new _three.Mesh(new _three.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new _three.MeshBasicMaterial({
                     color: 0xffffff,
                     visible: true,
                     transparent: true,
                     opacity: 0
                 }));
-                this.group_hover.add(this.line);
-                this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
-                this.line.position.x = this.positionH;
-                this.line.position.y = this.hoverLineHeight / 2;
+                this.cross_1.name = 'cross_1';
+                this.group_hover.add(this.cross_1);
+                this.cross_1.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+                this.cross_1.position.x = this.positionH;
+                this.cross_1.position.y = this.hoverLineHeight / 2;
+                // ---> Text
+                this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font)=>{
+                    this.textBottom = new _three.Mesh(new _textGeometryJs.TextGeometry('Never made it into the basement.', {
+                        font: font,
+                        size: 0.5,
+                        height: 0.2
+                    }), new _three.MeshBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 1
+                    }));
+                    this.textBottom.name = 'text_bottom';
+                    this.group_hover.add(this.textBottom);
+                    this.textBottom.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
+                    this.textBottom.position.x = this.positionH;
+                    this.textBottom.position.y = this.hoverLineHeight / 2;
+                    this.textBottom.scale.set(0.1, 0.1, 0.1);
+                });
             }
             resolve();
         });
@@ -810,7 +852,7 @@ class WebGL {
         });
     }
     hoverOnObjects() {
-        this.scene.getObjectByName('group_hover').children.forEach((hoverObject, index1)=>{
+        this.scene.getObjectByName('group_hover').children.forEach((hoverObject, index)=>{
             // [] --- Refresh Object Position
             if (hoverObject.getWorldPosition(this.target).z > 2) hoverObject.position.z -= this.vDist * this.hoverCount;
             // [] --- Move Particles
@@ -821,47 +863,34 @@ class WebGL {
             // [] --- Reset Particles
             if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.25) this.group_particles.position.z = -this.vDist / 2;
             // [] --- Unhide Object
-            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor) _gsapDefault.default.to(hoverObject.material, {
-                opacity: 0.25,
-                duration: 1
-            });
-            else _gsapDefault.default.to(hoverObject.material, {
-                opacity: 0,
-                duration: 1
-            });
-            // [] --- Reveal Object
-            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize) {
-                this.group_particles.children.forEach((particle, index)=>{
-                    setTimeout(()=>{
-                        particle.position.x *= 0.95;
-                        particle.position.z *= 0.95;
-                        particle.position.y *= 0.95;
-                        this.particlesSize = this.randomGenerator(0.005, 0.01);
-                        _gsapDefault.default.to(particle.scale, {
-                            x: this.particlesSize,
-                            y: this.particlesSize,
-                            z: this.particlesSize,
-                            duration: 1
-                        });
-                    }, index * 20);
-                    _gsapDefault.default.to(hoverObject.material, {
-                        opacity: 1,
-                        duration: 1
-                    });
+            if (hoverObject.getObjectByName('line')) {
+                if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor) _gsapDefault.default.to(hoverObject.getObjectByName('line').material, {
+                    opacity: 0.25,
+                    duration: 1
                 });
-                // Slow Down
-                this.hoverAnimations(hoverObject);
+                else _gsapDefault.default.to(hoverObject.getObjectByName('line').material, {
+                    opacity: 0,
+                    duration: 1
+                });
             }
+            // [] --- Reveal Object
+            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize) // Slow Down
+            this.hoverAnimations(hoverObject);
         });
     }
+    //
+    // HOVER ANIMATIONS
+    //
     hoverAnimations(hoverObject) {
-        //
-        // SLOW DOWN
-        //
         // ---> Global
         this.globalSpeed *= 0.95;
         // ---> Video
         this.video.playbackRate = 0;
+        _gsapDefault.default.to(this.video, {
+            scale: 1.1,
+            duration: 5,
+            ease: 'power3'
+        });
         // ---> Camera
         _gsapDefault.default.to(this.camera, {
             zoom: 1.05,
@@ -869,7 +898,7 @@ class WebGL {
             ease: 'power3'
         });
         this.camera.updateProjectionMatrix();
-        ///////////////////////////////
+        /////////////////////////////////////
         // ---> Light
         this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x;
         this.vDistance = this.lightObject.position.z - hoverObject.getWorldPosition(this.target).z;
@@ -884,7 +913,38 @@ class WebGL {
             duration: 2,
             ease: 'power2'
         });
+        // --> Particles
         this.group_particles.position.z *= 0.95;
+        this.group_particles.children.forEach((particle, index)=>{
+            setTimeout(()=>{
+                particle.position.x *= 0.95;
+                particle.position.z *= 0.95;
+                particle.position.y *= 0.95;
+                this.particlesSize = this.randomGenerator(0.005, 0.01);
+                _gsapDefault.default.to(particle.scale, {
+                    x: this.particlesSize,
+                    y: this.particlesSize,
+                    z: this.particlesSize,
+                    duration: 1
+                });
+            }, index * 20);
+        });
+        // ---> Line
+        if (hoverObject.getObjectByName('line')) _gsapDefault.default.to(hoverObject.getObjectByName('line').material, {
+            opacity: 1,
+            duration: 1
+        });
+        // ---> Cross
+        if (hoverObject.getObjectByName('cross_1')) {
+            _gsapDefault.default.to(hoverObject.getObjectByName('cross_1').material, {
+                opacity: 0.5,
+                duration: 2
+            });
+            _gsapDefault.default.to(hoverObject.getObjectByName('cross_1').scale, {
+                duration: 2,
+                y: 3
+            });
+        }
         this.mouseFlag = false;
     }
     //
@@ -920,7 +980,7 @@ class WebGL {
 }
 exports.default = WebGL;
 
-},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE","three/examples/jsm/loaders/FontLoader.js":"h0CPK","three/examples/jsm/geometries/TextGeometry.js":"d5vi9"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping
@@ -38799,6 +38859,160 @@ var _three = require("three");
 
 		}`
 };
+
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h0CPK":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "FontLoader", ()=>FontLoader
+);
+parcelHelpers.export(exports, "Font", ()=>Font
+);
+var _three = require("three");
+class FontLoader extends _three.Loader {
+    constructor(manager){
+        super(manager);
+    }
+    load(url, onLoad, onProgress, onError) {
+        const scope = this;
+        const loader = new _three.FileLoader(this.manager);
+        loader.setPath(this.path);
+        loader.setRequestHeader(this.requestHeader);
+        loader.setWithCredentials(scope.withCredentials);
+        loader.load(url, function(text) {
+            let json;
+            try {
+                json = JSON.parse(text);
+            } catch (e) {
+                console.warn('THREE.FontLoader: typeface.js support is being deprecated. Use typeface.json instead.');
+                json = JSON.parse(text.substring(65, text.length - 2));
+            }
+            const font = scope.parse(json);
+            if (onLoad) onLoad(font);
+        }, onProgress, onError);
+    }
+    parse(json) {
+        return new Font(json);
+    }
+}
+//
+class Font {
+    constructor(data){
+        this.type = 'Font';
+        this.data = data;
+    }
+    generateShapes(text, size = 100) {
+        const shapes = [];
+        const paths = createPaths(text, size, this.data);
+        for(let p = 0, pl = paths.length; p < pl; p++)Array.prototype.push.apply(shapes, paths[p].toShapes());
+        return shapes;
+    }
+}
+function createPaths(text, size, data) {
+    const chars = Array.from(text);
+    const scale = size / data.resolution;
+    const line_height = (data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;
+    const paths = [];
+    let offsetX = 0, offsetY = 0;
+    for(let i = 0; i < chars.length; i++){
+        const char = chars[i];
+        if (char === '\n') {
+            offsetX = 0;
+            offsetY -= line_height;
+        } else {
+            const ret = createPath(char, scale, offsetX, offsetY, data);
+            offsetX += ret.offsetX;
+            paths.push(ret.path);
+        }
+    }
+    return paths;
+}
+function createPath(char, scale, offsetX, offsetY, data) {
+    const glyph = data.glyphs[char] || data.glyphs['?'];
+    if (!glyph) {
+        console.error('THREE.Font: character "' + char + '" does not exists in font family ' + data.familyName + '.');
+        return;
+    }
+    const path = new _three.ShapePath();
+    let x, y, cpx, cpy, cpx1, cpy1, cpx2, cpy2;
+    if (glyph.o) {
+        const outline = glyph._cachedOutline || (glyph._cachedOutline = glyph.o.split(' '));
+        for(let i = 0, l = outline.length; i < l;){
+            const action = outline[i++];
+            switch(action){
+                case 'm':
+                    x = outline[i++] * scale + offsetX;
+                    y = outline[i++] * scale + offsetY;
+                    path.moveTo(x, y);
+                    break;
+                case 'l':
+                    x = outline[i++] * scale + offsetX;
+                    y = outline[i++] * scale + offsetY;
+                    path.lineTo(x, y);
+                    break;
+                case 'q':
+                    cpx = outline[i++] * scale + offsetX;
+                    cpy = outline[i++] * scale + offsetY;
+                    cpx1 = outline[i++] * scale + offsetX;
+                    cpy1 = outline[i++] * scale + offsetY;
+                    path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
+                    break;
+                case 'b':
+                    cpx = outline[i++] * scale + offsetX;
+                    cpy = outline[i++] * scale + offsetY;
+                    cpx1 = outline[i++] * scale + offsetX;
+                    cpy1 = outline[i++] * scale + offsetY;
+                    cpx2 = outline[i++] * scale + offsetX;
+                    cpy2 = outline[i++] * scale + offsetY;
+                    path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
+                    break;
+            }
+        }
+    }
+    return {
+        offsetX: glyph.ha * scale,
+        path: path
+    };
+}
+Font.prototype.isFont = true;
+
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d5vi9":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "TextGeometry", ()=>TextGeometry
+);
+/**
+ * Text = 3D Text
+ *
+ * parameters = {
+ *  font: <THREE.Font>, // font
+ *
+ *  size: <float>, // size of the text
+ *  height: <float>, // thickness to extrude text
+ *  curveSegments: <int>, // number of points on the curves
+ *
+ *  bevelEnabled: <bool>, // turn on bevel
+ *  bevelThickness: <float>, // how deep into text bevel goes
+ *  bevelSize: <float>, // how far from text outline (including bevelOffset) is bevel
+ *  bevelOffset: <float> // how far from text outline does bevel start
+ * }
+ */ var _three = require("three");
+class TextGeometry extends _three.ExtrudeGeometry {
+    constructor(text, parameters = {}){
+        const font = parameters.font;
+        if (font === undefined) super(); // generate default extrude geometry
+        else {
+            const shapes = font.generateShapes(text, parameters.size);
+            // translate parameters to ExtrudeGeometry API
+            parameters.depth = parameters.height !== undefined ? parameters.height : 50;
+            // defaults
+            if (parameters.bevelThickness === undefined) parameters.bevelThickness = 10;
+            if (parameters.bevelSize === undefined) parameters.bevelSize = 8;
+            if (parameters.bevelEnabled === undefined) parameters.bevelEnabled = false;
+            super(shapes, parameters);
+        }
+        this.type = 'TextGeometry';
+    }
+}
 
 },{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["jKwHT","bNKaB"], "bNKaB", "parcelRequire3d27")
 

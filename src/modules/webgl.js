@@ -5,6 +5,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 import Stats from 'stats.js'
 import gsap from 'gsap'
 
@@ -44,8 +46,11 @@ export default class WebGL {
     this.hoverCount = 5
     this.hoverSize = 0.1
     this.hoverUnhideFactor = 4
-    this.hoverLineHeight = 0.5
+    this.hoverLineHeight = 0.6
+    this.hoverLineThickness = 0.0075
 
+    ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
     ///////////////////////////////////////////////
 
     //
@@ -122,6 +127,9 @@ export default class WebGL {
     this.lightObject
     this.mouseX
     this.distance
+
+    // Fonts
+    this.fontLoader = new FontLoader()
 
     // Functions
     this.resize()
@@ -293,7 +301,9 @@ export default class WebGL {
       this.scene.add(this.group_hover)
 
       for (let i = 0; i < this.hoverCount; i++) {
+        // ---> Hover Object
         this.hoverObject = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverSize, this.hoverSize), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, visible: false, transparent: true, opacity: 1 }))
+        this.hoverObject.name = 'hover_object'
         this.group_hover.add(this.hoverObject)
 
         this.positionH = this.randomGenerator(-1, 1)
@@ -303,14 +313,45 @@ export default class WebGL {
         this.hoverObject.rotation.x = Math.PI / -2
         this.hoverObject.position.y = 0.1
 
-        this.texture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png')
+        // ---> Hover Line
+        this.alphaTexture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png')
 
-        this.line = new THREE.Mesh(new THREE.PlaneGeometry(0.005, this.hoverLineHeight), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
+        this.line = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight), new THREE.MeshBasicMaterial({ color: 0xffffff, alphaMap: this.alphaTexture, visible: true, transparent: true, opacity: 0 }))
+        this.line.name = 'line'
         this.group_hover.add(this.line)
 
         this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
         this.line.position.x = this.positionH
         this.line.position.y = this.hoverLineHeight / 2
+
+        // ---> Cross
+        this.cross_1 = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
+        this.cross_1.name = 'cross_1'
+        this.group_hover.add(this.cross_1)
+
+        this.cross_1.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
+        this.cross_1.position.x = this.positionH
+        this.cross_1.position.y = this.hoverLineHeight / 2
+
+        // ---> Text
+        this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font) => {
+          this.textBottom = new THREE.Mesh(
+            new TextGeometry('Never made it into the basement.', {
+              font: font,
+              size: 0.5,
+              height: 0.2,
+            }),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+          )
+
+          this.textBottom.name = 'text_bottom'
+          this.group_hover.add(this.textBottom)
+
+          this.textBottom.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
+          this.textBottom.position.x = this.positionH
+          this.textBottom.position.y = this.hoverLineHeight / 2
+          this.textBottom.scale.set(0.1, 0.1, 0.1)
+        })
       }
 
       resolve()
@@ -365,22 +406,24 @@ export default class WebGL {
       }
 
       // [] --- Unhide Object
-      if (
-        hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor &&
-        hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor &&
-        hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor &&
-        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor
-        //
-      ) {
-        gsap.to(hoverObject.material, {
-          opacity: 0.25,
-          duration: 1,
-        })
-      } else {
-        gsap.to(hoverObject.material, {
-          opacity: 0,
-          duration: 1,
-        })
+      if (hoverObject.getObjectByName('line')) {
+        if (
+          hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor &&
+          hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor &&
+          hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor &&
+          hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor
+          //
+        ) {
+          gsap.to(hoverObject.getObjectByName('line').material, {
+            opacity: 0.25,
+            duration: 1,
+          })
+        } else {
+          gsap.to(hoverObject.getObjectByName('line').material, {
+            opacity: 0,
+            duration: 1,
+          })
+        }
       }
 
       // [] --- Reveal Object
@@ -391,44 +434,27 @@ export default class WebGL {
         hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize
         //
       ) {
-        this.group_particles.children.forEach((particle, index) => {
-          setTimeout(() => {
-            particle.position.x *= 0.95
-            particle.position.z *= 0.95
-            particle.position.y *= 0.95
-
-            this.particlesSize = this.randomGenerator(0.005, 0.01)
-
-            gsap.to(particle.scale, {
-              x: this.particlesSize,
-              y: this.particlesSize,
-              z: this.particlesSize,
-              duration: 1,
-            })
-          }, index * 20)
-
-          gsap.to(hoverObject.material, {
-            opacity: 1,
-            duration: 1,
-          })
-        })
-
         // Slow Down
         this.hoverAnimations(hoverObject)
       }
     })
   }
 
-  hoverAnimations(hoverObject) {
-    //
-    // SLOW DOWN
-    //
+  //
+  // HOVER ANIMATIONS
+  //
 
+  hoverAnimations(hoverObject) {
     // ---> Global
     this.globalSpeed *= 0.95
 
     // ---> Video
     this.video.playbackRate = 0
+    gsap.to(this.video, {
+      scale: 1.1,
+      duration: 5,
+      ease: 'power3',
+    })
 
     // ---> Camera
     gsap.to(this.camera, {
@@ -438,7 +464,7 @@ export default class WebGL {
     })
     this.camera.updateProjectionMatrix()
 
-    ///////////////////////////////
+    /////////////////////////////////////
 
     // ---> Light
     this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
@@ -458,7 +484,46 @@ export default class WebGL {
       ease: 'power2',
     })
 
+    // --> Particles
+
     this.group_particles.position.z *= 0.95
+
+    this.group_particles.children.forEach((particle, index) => {
+      setTimeout(() => {
+        particle.position.x *= 0.95
+        particle.position.z *= 0.95
+        particle.position.y *= 0.95
+
+        this.particlesSize = this.randomGenerator(0.005, 0.01)
+
+        gsap.to(particle.scale, {
+          x: this.particlesSize,
+          y: this.particlesSize,
+          z: this.particlesSize,
+          duration: 1,
+        })
+      }, index * 20)
+    })
+
+    // ---> Line
+    if (hoverObject.getObjectByName('line')) {
+      gsap.to(hoverObject.getObjectByName('line').material, {
+        opacity: 1,
+        duration: 1,
+      })
+    }
+
+    // ---> Cross
+    if (hoverObject.getObjectByName('cross_1')) {
+      gsap.to(hoverObject.getObjectByName('cross_1').material, {
+        opacity: 0.5,
+        duration: 2,
+      })
+      gsap.to(hoverObject.getObjectByName('cross_1').scale, {
+        duration: 2,
+        y: 3,
+      })
+    }
 
     this.mouseFlag = false
   }

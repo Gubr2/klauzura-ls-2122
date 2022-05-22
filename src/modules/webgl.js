@@ -7,11 +7,20 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
+
+import Texts from './texts'
+
 import Stats from 'stats.js'
 import gsap from 'gsap'
 
 export default class WebGL {
   constructor(options) {
+    //
+    // IMPORTS
+    //
+
+    this.texts = new Texts()
+
     //
     // SETTINGS
     //
@@ -43,7 +52,7 @@ export default class WebGL {
     this.particlesMaxSize = 0.01
 
     // ---> Hover
-    this.hoverCount = 5
+    this.hoverCount = this.texts.collection.length
     this.hoverSize = 0.1
     this.hoverUnhideFactor = 4
     this.hoverLineHeight = 0.6
@@ -130,7 +139,12 @@ export default class WebGL {
     this.distance
 
     // Fonts
-    this.fontLoader = new FontLoader()
+    this.myFont = new FontFace('myFont', 'url(../fonts/AttackType-Regular.ttf)')
+
+    this.myFont.load().then(function (font) {
+      document.fonts.add(font)
+      console.log('Fonts loaded')
+    })
 
     // Functions
     this.resize()
@@ -292,6 +306,89 @@ export default class WebGL {
     })
   }
 
+  addText() {
+    return new Promise((resolve) => {
+      // ---> Text
+      this.canvas = document.createElement('canvas')
+      this.canvas.width = 512
+      this.canvas.height = 512
+      this.ctx = this.canvas.getContext('2d')
+      this.textTexture = new THREE.CanvasTexture(this.canvas)
+
+      // ---> Mesh
+      this.textMesh = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial({ map: this.textTexture, transparent: true, opacity: 0 }))
+      this.textMesh.name = 'text_mesh'
+      this.textMesh.position.y = this.lightObjectV
+      this.textMesh.scale.set(0.75, 0.75)
+
+      this.scene.add(this.textMesh) // Obsah sa prdáva až následne počas animácie
+
+      // this.group_text = new THREE.Group()
+      // this.group_text.name = 'group_text'
+
+      // this.group_text.position.y = this.lightObjectV
+
+      // this.scene.add(this.group_text)
+
+      // this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font) => {
+      //   // ---> Number
+      //   this.textNumber = new THREE.Mesh(
+      //     new TextGeometry('01', {
+      //       font: font,
+      //       size: 0.025,
+      //       height: 0,
+      //     }),
+      //     new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+      //   )
+
+      //   this.textNumber.name = 'text_number'
+      //   this.group_text.add(this.textNumber)
+
+      //   // this.textNumber.position.z = this.vDist + this.vDist / 3 - this.hoverSize / 2
+      //   // this.textNumber.position.x = this.hoverTextShift
+      //   // this.textNumber.position.y = this.hoverLineHeight / 1.2
+
+      //   // // ---> Top
+      //   // this.textTop = new THREE.Mesh(
+      //   //   new TextGeometry('Never made it', {
+      //   //     font: font,
+      //   //     size: 0.05,
+      //   //     height: 0,
+      //   //   }),
+      //   //   new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+      //   // )
+
+      //   // this.textTop.name = 'text_top'
+      //   // this.group_hover.add(this.textTop)
+
+      //   // this.textTop.position.z = this.vDist + this.vDist / 3 - this.hoverSize / 2
+      //   // this.textTop.position.x = this.hoverTextShift
+      //   // this.textTop.position.y = this.hoverLineHeight / 1.6
+
+      //   // // ---> Bottom
+      //   // this.textBottom = new THREE.Mesh(
+      //   //   new TextGeometry('into the basement.', {
+      //   //     font: font,
+      //   //     size: 0.05,
+      //   //     height: 0,
+      //   //   }),
+      //   //   new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+      //   // )
+
+      //   // this.textBottom.name = 'text_bottom'
+      //   // this.group_hover.add(this.textBottom)
+
+      //   // this.textBottom.position.z = this.vDist + this.vDist / 3 - this.hoverSize / 2
+      //   // this.textBottom.position.x = this.hoverTextShift
+      //   // this.textBottom.position.y = this.hoverLineHeight / 2
+
+      //   resolve()
+      // })
+
+      resolve()
+    })
+  }
+
   addHoverObjects() {
     return new Promise((resolve) => {
       this.group_hover = new THREE.Group()
@@ -326,74 +423,22 @@ export default class WebGL {
         this.line.position.y = this.hoverLineHeight / 2
 
         // ---> Cross
-        this.cross_1 = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
-        this.cross_1.name = 'cross_1'
-        this.group_hover.add(this.cross_1)
+        this.lineLong = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
+        this.lineLong.name = 'lineLong'
+        this.group_hover.add(this.lineLong)
 
-        this.cross_1.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
-        this.cross_1.position.x = this.positionH
-        this.cross_1.position.y = this.hoverLineHeight / 2
+        this.lineLong.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2
+        this.lineLong.position.x = this.positionH
+        this.lineLong.position.y = this.hoverLineHeight / 2
 
-        // ---> Text
-        this.textGenerator(this.positionH, i)
+        // // ---> Text
+        // this.textGenerator(this.positionH, i)
+        if (i == 0) {
+          this.hoverObjectCount = this.group_hover.children.length // Spočítanie, koľko sa nachádza objektov v jednej iterácii skupiny (kvôli následnému deleniu pri určovaní indexu jednotlivých textov). Zrejme to nepochopíš, až sa k tomuto vrátiš. Ser na to, hlavne že to funguje.
+        }
       }
 
       resolve()
-    })
-  }
-
-  textGenerator(positionH, index) {
-    this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font) => {
-      // ---> Number
-      this.textNumber = new THREE.Mesh(
-        new TextGeometry(`0${index + 1}`, {
-          font: font,
-          size: 0.025,
-          height: 0,
-        }),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
-      )
-
-      this.textNumber.name = 'text_number'
-      this.group_hover.add(this.textNumber)
-
-      this.textNumber.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2
-      this.textNumber.position.x = positionH + this.hoverTextShift
-      this.textNumber.position.y = this.hoverLineHeight / 1.2
-
-      // ---> Top
-      this.textTop = new THREE.Mesh(
-        new TextGeometry('Never made it', {
-          font: font,
-          size: 0.05,
-          height: 0,
-        }),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
-      )
-
-      this.textTop.name = 'text_top'
-      this.group_hover.add(this.textTop)
-
-      this.textTop.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2
-      this.textTop.position.x = positionH + this.hoverTextShift
-      this.textTop.position.y = this.hoverLineHeight / 1.6
-
-      // ---> Bottom
-      this.textBottom = new THREE.Mesh(
-        new TextGeometry('into the basement.', {
-          font: font,
-          size: 0.05,
-          height: 0,
-        }),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
-      )
-
-      this.textBottom.name = 'text_bottom'
-      this.group_hover.add(this.textBottom)
-
-      this.textBottom.position.z = -index * this.vDist + this.vDist / 3 - this.hoverSize / 2
-      this.textBottom.position.x = positionH + this.hoverTextShift
-      this.textBottom.position.y = this.hoverLineHeight / 2
     })
   }
 
@@ -407,6 +452,7 @@ export default class WebGL {
       this.addHouses(),
       this.addLightObject(),
       this.addHoverParticles(),
+      this.addText(),
       this.addHoverObjects(),
     ]).then(() => {
       console.log('resolved')
@@ -427,21 +473,45 @@ export default class WebGL {
   }
 
   hoverOnObjects() {
-    this.scene.getObjectByName('group_hover').children.forEach((hoverObject, index) => {
+    this.group_hover.children.forEach((hoverObject, index) => {
       // [] --- Refresh Object Position
       if (hoverObject.getWorldPosition(this.target).z > 2) {
         hoverObject.position.z -= this.vDist * this.hoverCount
       }
 
-      // [] --- Move Particles
+      // [] --- Move Particles & Text
       if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < this.vDist / 2) {
         this.group_particles.position.x = hoverObject.position.x
         this.group_particles.position.z += this.globalSpeed
+
+        this.textMesh.position.x = hoverObject.position.x + this.textMesh.scale.x / 2 + this.hoverTextShift
+        this.textMesh.position.z += this.globalSpeed / 3
       }
 
       // [] --- Reset Particles
       if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.25) {
+        this.objectIndex = (index + 1) / this.hoverObjectCount
+
         this.group_particles.position.z = -this.vDist / 2
+        this.textMesh.position.z = -this.vDist / 2
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        // ---> Number
+        this.ctx.fillStyle = 'white'
+        this.ctx.font = '20px sans-serif'
+        this.ctx.fillText(`0${this.objectIndex}`, 0, 20)
+
+        // ---> Upper Text
+        this.ctx.fillStyle = 'white'
+        this.ctx.font = '40px sans-serif'
+        this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].upperText : ''}`, 0, 100)
+
+        // ---> Bottom Text
+        this.ctx.fillStyle = 'white'
+        this.ctx.font = '40px sans-serif'
+        this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].bottomText : ''}`, 0, 140)
+
+        this.textTexture.needsUpdate = true
       }
 
       // [] --- Unhide Object
@@ -552,17 +622,23 @@ export default class WebGL {
       })
     }
 
-    // ---> Cross
-    if (hoverObject.getObjectByName('cross_1')) {
-      gsap.to(hoverObject.getObjectByName('cross_1').material, {
+    // ---> Line Long
+    if (hoverObject.getObjectByName('lineLong')) {
+      gsap.to(hoverObject.getObjectByName('lineLong').material, {
         opacity: 0.5,
         duration: 2,
       })
-      gsap.to(hoverObject.getObjectByName('cross_1').scale, {
+      gsap.to(hoverObject.getObjectByName('lineLong').scale, {
         duration: 2,
         y: 3,
       })
     }
+
+    // ---> Text
+    gsap.to(this.textMesh.material, {
+      opacity: 1,
+      duration: 2,
+    })
 
     this.mouseFlag = false
   }

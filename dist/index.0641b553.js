@@ -645,9 +645,14 @@ class WebGL {
         this.distance;
         // Fonts
         this.attacktype = new FontFace('attacktype', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/AttackType-Regular.ttf)');
+        this.craftwork = new FontFace('craftwork', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/CraftworkGrotesk-Medium.ttf)');
         this.attacktype.load().then(function(font) {
             document.fonts.add(font);
-            console.log('Fonts loaded');
+            console.log('Attack Type Loaded');
+        });
+        this.craftwork.load().then(function(font) {
+            document.fonts.add(font);
+            console.log('Craftwork Loaded');
         });
         // Functions
         this.resize();
@@ -777,6 +782,7 @@ class WebGL {
             this.canvas.height = 512;
             this.ctx = this.canvas.getContext('2d');
             this.textTexture = new _three.CanvasTexture(this.canvas);
+            this.textTexture.minFilter = _three.NearestFilter;
             // ---> Mesh
             this.textMesh = new _three.Mesh(new _three.PlaneGeometry(), new _three.MeshBasicMaterial({
                 map: this.textTexture,
@@ -939,7 +945,7 @@ class WebGL {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 // ---> Number
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '20px sans-serif';
+                this.ctx.font = '20px craftwork';
                 this.ctx.fillText(`0${this.objectIndex}`, 0, 20);
                 // ---> Upper Text
                 this.ctx.fillStyle = 'white';
@@ -39126,6 +39132,10 @@ class Texts {
             {
                 upperText: 'Shot for being',
                 bottomText: 'being alive.'
+            },
+            {
+                upperText: 'Being ill meant',
+                bottomText: 'a certain death.'
             }, 
         ];
     }

@@ -13,6 +13,10 @@ export default class Texts {
         upperText: 'Shot for being',
         bottomText: 'being alive.',
       },
+      {
+        upperText: 'Being ill meant',
+        bottomText: 'a certain death.',
+      },
     ]
   }
 }

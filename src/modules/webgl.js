@@ -140,10 +140,16 @@ export default class WebGL {
 
     // Fonts
     this.attacktype = new FontFace('attacktype', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/AttackType-Regular.ttf)')
+    this.craftwork = new FontFace('craftwork', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/CraftworkGrotesk-Medium.ttf)')
 
     this.attacktype.load().then(function (font) {
       document.fonts.add(font)
-      console.log('Fonts loaded')
+      console.log('Attack Type Loaded')
+    })
+
+    this.craftwork.load().then(function (font) {
+      document.fonts.add(font)
+      console.log('Craftwork Loaded')
     })
 
     // Functions
@@ -314,6 +320,8 @@ export default class WebGL {
       this.canvas.height = 512
       this.ctx = this.canvas.getContext('2d')
       this.textTexture = new THREE.CanvasTexture(this.canvas)
+
+      this.textTexture.minFilter = THREE.NearestFilter
 
       // ---> Mesh
       this.textMesh = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial({ map: this.textTexture, transparent: true, opacity: 0 }))
@@ -498,7 +506,7 @@ export default class WebGL {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         // ---> Number
         this.ctx.fillStyle = 'white'
-        this.ctx.font = '20px sans-serif'
+        this.ctx.font = '20px craftwork'
         this.ctx.fillText(`0${this.objectIndex}`, 0, 20)
 
         // ---> Upper Text

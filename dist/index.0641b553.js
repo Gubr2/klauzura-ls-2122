@@ -644,8 +644,8 @@ class WebGL {
         this.mouseX;
         this.distance;
         // Fonts
-        this.myFont = new FontFace('myFont', 'url(../fonts/AttackType-Regular.ttf)');
-        this.myFont.load().then(function(font) {
+        this.attacktype = new FontFace('attacktype', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/AttackType-Regular.ttf)');
+        this.attacktype.load().then(function(font) {
             document.fonts.add(font);
             console.log('Fonts loaded');
         });
@@ -943,12 +943,13 @@ class WebGL {
                 this.ctx.fillText(`0${this.objectIndex}`, 0, 20);
                 // ---> Upper Text
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '40px sans-serif';
+                this.ctx.font = '50px attacktype';
+                console.log(document.fonts);
                 this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].upperText : ''}`, 0, 100);
                 // ---> Bottom Text
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '40px sans-serif';
-                this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].bottomText : ''}`, 0, 140);
+                this.ctx.font = '50px attacktype';
+                this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].bottomText : ''}`, 0, 150);
                 this.textTexture.needsUpdate = true;
             }
             // [] --- Unhide Object

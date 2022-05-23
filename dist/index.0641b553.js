@@ -529,11 +529,14 @@ function hmrAcceptRun(bundle, id) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _webgl = require("./modules/webgl");
 var _webglDefault = parcelHelpers.interopDefault(_webgl);
+var _fullscreen = require("./modules/fullscreen");
+var _fullscreenDefault = parcelHelpers.interopDefault(_fullscreen);
 const webgl = new _webglDefault.default({
     dom: document.querySelector('.webgl')
 });
+const fullscreen = new _fullscreenDefault.default();
 
-},{"./modules/webgl":"1KQMQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1KQMQ":[function(require,module,exports) {
+},{"./modules/webgl":"1KQMQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./modules/fullscreen":"2hA5I"}],"1KQMQ":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
@@ -619,7 +622,7 @@ class WebGL {
         // this.renderer.toneMapping = THREE.ReinhardToneMapping
         this.container.appendChild(this.renderer.domElement);
         // Controls
-        // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+        this.controls = new _orbitControlsJs.OrbitControls(this.camera, this.renderer.domElement);
         // Composer
         this.composer = new _effectComposerJs.EffectComposer(this.renderer);
         this.composer.setSize(this.width, this.height);
@@ -638,6 +641,8 @@ class WebGL {
         this.loadedForAnimation = false;
         this.hoverFlag = true;
         this.mouseFlag = true;
+        this.objectsFlag = [];
+        this.objectsBlock = false;
         // Empty Variables
         this.lightSource;
         this.lightObject;
@@ -654,11 +659,14 @@ class WebGL {
             document.fonts.add(font);
             console.log('Craftwork Loaded');
         });
+        // Reset Button
+        this.resetBtn = document.querySelector('.reset-btn');
         // Functions
         this.resize();
         this.setupResize();
         this.mouseMovement();
         this.promises();
+        this.resetHandler();
         this.render();
     }
     setupResize() {
@@ -912,7 +920,8 @@ class WebGL {
             this.addLightObject(),
             this.addHoverParticles(),
             this.addText(),
-            this.addHoverObjects(), 
+            this.addHoverObjects(),
+            this.makeObjectsActive(), 
         ]).then(()=>{
             console.log('resolved');
             this.loadedForAnimation = true;
@@ -924,6 +933,11 @@ class WebGL {
     refreshHousePosition() {
         this.scene.getObjectByName('group_houses').children.forEach((house)=>{
             if (house.getWorldPosition(this.target).z > 2.5) house.position.z -= this.vDist * this.vCount;
+        });
+    }
+    makeObjectsActive() {
+        this.group_hover.children.forEach((hoverObject, index)=>{
+            this.objectsFlag[index] = true;
         });
     }
     hoverOnObjects() {
@@ -950,7 +964,6 @@ class WebGL {
                 // ---> Upper Text
                 this.ctx.fillStyle = 'white';
                 this.ctx.font = '50px attacktype';
-                console.log(document.fonts);
                 this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].upperText : ''}`, 0, 100);
                 // ---> Bottom Text
                 this.ctx.fillStyle = 'white';
@@ -960,7 +973,8 @@ class WebGL {
             }
             // [] --- Unhide Object
             if (hoverObject.getObjectByName('line')) {
-                if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor) _gsapDefault.default.to(hoverObject.getObjectByName('line').material, {
+                if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor && //
+                this.objectsFlag[index]) _gsapDefault.default.to(hoverObject.getObjectByName('line').material, {
                     opacity: 0.25,
                     duration: 1
                 });
@@ -970,16 +984,21 @@ class WebGL {
                 });
             }
             // [] --- Reveal Object
-            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize) // Slow Down
-            this.hoverAnimations(hoverObject);
+            if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize && //
+            this.objectsFlag[index]) {
+                // Slow Down
+                console.log('intersect');
+                this.hoverAnimations(hoverObject, index);
+            }
         });
     }
     //
     // HOVER ANIMATIONS
     //
-    hoverAnimations(hoverObject) {
+    hoverAnimations(hoverObject, index1) {
+        console.log(index1);
         // ---> Global
-        this.globalSpeed *= 0.95;
+        this.globalSpeed = 0;
         // ---> Video
         this.video.playbackRate = 0;
         _gsapDefault.default.to(this.video, {
@@ -1007,7 +1026,12 @@ class WebGL {
             z: 1.5,
             delay: 0.5,
             duration: 2,
-            ease: 'power2'
+            ease: 'power2',
+            onComplete: ()=>{
+                console.log('stopped');
+                this.objectsFlag[index1] = false;
+                this.objectsBlock = true;
+            }
         });
         // --> Particles
         this.group_particles.position.z *= 0.95;
@@ -1047,6 +1071,17 @@ class WebGL {
             duration: 2
         });
         this.mouseFlag = false;
+    }
+    //
+    // RESET
+    //
+    resetHandler() {
+        this.resetBtn.addEventListener('click', this.reset.bind(this));
+    }
+    reset() {
+        this.globalSpeed = 0.0035;
+        this.mouseFlag = true;
+        this.objectsBlock = false;
     }
     //
     // RENDER
@@ -39141,6 +39176,38 @@ class Texts {
     }
 }
 exports.default = Texts;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2hA5I":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Fullscreen {
+    constructor(){
+        this.elem = document.documentElement;
+        this.button = document.querySelector('.fullscreen-btn');
+        this.buttonFlag = true;
+        this.buttonHandler();
+    }
+    buttonHandler() {
+        this.button.addEventListener('click', ()=>{
+            if (this.buttonFlag) this.openFullscreen();
+            else this.closeFullscreen();
+        });
+    }
+    /* View in fullscreen */ openFullscreen() {
+        this.buttonFlag = false;
+        this.button.style.visibility = 'hidden';
+        if (this.elem.requestFullscreen) this.elem.requestFullscreen();
+        else if (this.elem.webkitRequestFullscreen) /* Safari */ this.elem.webkitRequestFullscreen();
+        else if (this.elem.msRequestFullscreen) /* IE11 */ this.elem.msRequestFullscreen();
+    }
+    /* Close fullscreen */ closeFullscreen() {
+        this.buttonFlag = true;
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) /* Safari */ document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) /* IE11 */ document.msExitFullscreen();
+    }
+}
+exports.default = Fullscreen;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["jKwHT","bNKaB"], "bNKaB", "parcelRequire3d27")
 

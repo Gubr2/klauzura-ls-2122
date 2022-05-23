@@ -105,7 +105,7 @@ export default class WebGL {
 
     // Controls
 
-    // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
     // Composer
     this.composer = new EffectComposer(this.renderer)
@@ -131,6 +131,8 @@ export default class WebGL {
     this.loadedForAnimation = false
     this.hoverFlag = true
     this.mouseFlag = true
+    this.objectsFlag = []
+    this.objectsBlock = false
 
     // Empty Variables
     this.lightSource
@@ -152,11 +154,15 @@ export default class WebGL {
       console.log('Craftwork Loaded')
     })
 
+    // Reset Button
+    this.resetBtn = document.querySelector('.reset-btn')
+
     // Functions
     this.resize()
     this.setupResize()
     this.mouseMovement()
     this.promises()
+    this.resetHandler()
     this.render()
   }
 
@@ -462,6 +468,7 @@ export default class WebGL {
       this.addHoverParticles(),
       this.addText(),
       this.addHoverObjects(),
+      this.makeObjectsActive(),
     ]).then(() => {
       console.log('resolved')
       this.loadedForAnimation = true
@@ -477,6 +484,12 @@ export default class WebGL {
       if (house.getWorldPosition(this.target).z > 2.5) {
         house.position.z -= this.vDist * this.vCount
       }
+    })
+  }
+
+  makeObjectsActive() {
+    this.group_hover.children.forEach((hoverObject, index) => {
+      this.objectsFlag[index] = true
     })
   }
 
@@ -512,7 +525,6 @@ export default class WebGL {
         // ---> Upper Text
         this.ctx.fillStyle = 'white'
         this.ctx.font = '50px attacktype'
-        console.log(document.fonts)
         this.ctx.fillText(`${Number.isInteger(this.objectIndex) ? this.texts.collection[this.objectIndex - 1].upperText : ''}`, 0, 100)
 
         // ---> Bottom Text
@@ -529,8 +541,9 @@ export default class WebGL {
           hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor &&
           hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor &&
           hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor &&
-          hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor
+          hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor &&
           //
+          this.objectsFlag[index]
         ) {
           gsap.to(hoverObject.getObjectByName('line').material, {
             opacity: 0.25,
@@ -549,11 +562,13 @@ export default class WebGL {
         hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize &&
         hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize &&
         hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize &&
-        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize
+        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize &&
         //
+        this.objectsFlag[index]
       ) {
         // Slow Down
-        this.hoverAnimations(hoverObject)
+        console.log('intersect')
+        this.hoverAnimations(hoverObject, index)
       }
     })
   }
@@ -562,9 +577,10 @@ export default class WebGL {
   // HOVER ANIMATIONS
   //
 
-  hoverAnimations(hoverObject) {
+  hoverAnimations(hoverObject, index) {
+    console.log(index)
     // ---> Global
-    this.globalSpeed *= 0.95
+    this.globalSpeed = 0
 
     // ---> Video
     this.video.playbackRate = 0
@@ -600,6 +616,11 @@ export default class WebGL {
       delay: 0.5,
       duration: 2,
       ease: 'power2',
+      onComplete: () => {
+        console.log('stopped')
+        this.objectsFlag[index] = false
+        this.objectsBlock = true
+      },
     })
 
     // --> Particles
@@ -650,6 +671,21 @@ export default class WebGL {
     })
 
     this.mouseFlag = false
+  }
+
+  //
+  // RESET
+  //
+
+  resetHandler() {
+    this.resetBtn.addEventListener('click', this.reset.bind(this))
+  }
+
+  reset() {
+    this.globalSpeed = 0.0035
+    this.mouseFlag = true
+
+    this.objectsBlock = false
   }
 
   //

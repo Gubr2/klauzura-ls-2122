@@ -49,6 +49,12 @@ body {
   transform: translateX(-50%);
 }
 
+.fullscreen-btn {
+  position: absolute;
+  bottom: 5rem;
+  right: 5rem;
+}
+
 video {
   width: 100vw;
   height: 100vh;

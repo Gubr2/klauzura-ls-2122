@@ -564,11 +564,14 @@ class WebGL {
         // SETTINGS
         //
         // ---> Global
-        this.globalSpeed = 0.0035;
+        this.globalSpeed = 0.0035 // 0.0035
+        ;
         // ---> Houses
         this.vDist = 0.83809;
-        this.hCount = 4;
-        this.vCount = 8;
+        this.hCount = 4 // 4
+        ;
+        this.vCount = 8 // 8
+        ;
         this.target = new _three.Vector3();
         // ---> Fog
         this.fogColor = 0xf5eedf;
@@ -582,6 +585,11 @@ class WebGL {
         this.particlesCount = 30;
         this.particlesMinSize = 0.01;
         this.particlesMaxSize = 0.01;
+        this.particlesPosition = {
+            x: [],
+            y: [],
+            z: []
+        };
         // ---> Hover
         this.hoverCount = this.texts.collection.length;
         this.hoverSize = 0.1;
@@ -607,6 +615,7 @@ class WebGL {
         this.container = options.dom;
         this.scene = new _three.Scene();
         this.scene.fog = new _three.Fog(this.fogColor, 4, 9);
+        this.scene.background = new _three.Color(this.fogColor);
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
         this.camera = new _three.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -643,14 +652,15 @@ class WebGL {
         this.mouseFlag = true;
         this.objectsFlag = [];
         this.objectsBlock = false;
+        this.hoveringFlag = false;
         // Empty Variables
         this.lightSource;
         this.lightObject;
         this.mouseX;
         this.distance;
         // Fonts
-        this.attacktype = new FontFace('attacktype', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/AttackType-Regular.ttf)');
-        this.craftwork = new FontFace('craftwork', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/CraftworkGrotesk-Medium.ttf)');
+        this.attacktype = new FontFace('attacktype', 'url(./src/fonts/AttackType-Regular.ttf');
+        this.craftwork = new FontFace('craftwork', 'url(./src/fonts/CraftworkGrotesk-Medium.ttf');
         this.attacktype.load().then(function(font) {
             document.fonts.add(font);
             console.log('Attack Type Loaded');
@@ -693,7 +703,7 @@ class WebGL {
             this.scene.add(this.group_houses);
             // GLTF
             this.loader = new _gltfloader.GLTFLoader(this.manager);
-            this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf)=>{
+            this.loader.load('./src/gltf/house_1.gltf', (gltf)=>{
                 this.house_1 = gltf.scene;
                 for(let i = 0; i < this.vCount; i++)for(let y = 0; y < this.hCount; y++){
                     this.clone = this.house_1.clone();
@@ -703,7 +713,7 @@ class WebGL {
                     this.group_houses.add(this.clone);
                 }
             });
-            this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf)=>{
+            this.loader.load('./src/gltf/house_2.gltf', (gltf)=>{
                 this.house_2 = gltf.scene;
                 for(let i = 0; i < this.vCount; i++)for(let y = 0; y < this.hCount; y++){
                     this.clone = this.house_2.clone();
@@ -778,6 +788,9 @@ class WebGL {
                 this.particle.position.y = -this.lightObjectV;
                 this.size = 0;
                 this.particle.scale.set(this.size, this.size, this.size);
+                this.particlesPosition.x[i] = this.particle.position.x;
+                this.particlesPosition.y[i] = this.particle.position.y;
+                this.particlesPosition.z[i] = this.particle.position.z;
             }
             resolve();
         });
@@ -877,7 +890,7 @@ class WebGL {
                 this.hoverObject.rotation.x = Math.PI / -2;
                 this.hoverObject.position.y = 0.1;
                 // ---> Hover Line
-                this.alphaTexture = new _three.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png');
+                this.alphaTexture = new _three.TextureLoader().load('./src/textures/line_alpha.png');
                 this.line = new _three.Mesh(new _three.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight), new _three.MeshBasicMaterial({
                     color: 0xffffff,
                     alphaMap: this.alphaTexture,
@@ -947,9 +960,10 @@ class WebGL {
             // [] --- Move Particles & Text
             if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < this.vDist / 2) {
                 this.group_particles.position.x = hoverObject.position.x;
-                this.group_particles.position.z += this.globalSpeed;
+                this.group_particles.position.z += this.globalSpeed / 3;
                 this.textMesh.position.x = hoverObject.position.x + this.textMesh.scale.x / 2 + this.hoverTextShift;
                 this.textMesh.position.z += this.globalSpeed / 3;
+                this.hoveringFlag = false;
             }
             // [] --- Reset Particles
             if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < -this.vDist / 2.25) {
@@ -987,8 +1001,15 @@ class WebGL {
             if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize && //
             this.objectsFlag[index]) {
                 // Slow Down
-                console.log('intersect');
                 this.hoverAnimations(hoverObject, index);
+                this.hoveringFlag = true;
+            } else if (hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize && hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize && hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize && hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize && //
+            !this.objectsFlag[index]) {
+                this.hoveringFlag = true;
+                _gsapDefault.default.to(this.textMesh.material, {
+                    opacity: 1,
+                    duration: 1
+                });
             }
         });
     }
@@ -996,20 +1017,19 @@ class WebGL {
     // HOVER ANIMATIONS
     //
     hoverAnimations(hoverObject, index1) {
-        console.log(index1);
         // ---> Global
         this.globalSpeed = 0;
         // ---> Video
         this.video.playbackRate = 0;
         _gsapDefault.default.to(this.video, {
             scale: 1.1,
-            duration: 5,
+            duration: 2,
             ease: 'power3'
         });
         // ---> Camera
         _gsapDefault.default.to(this.camera, {
             zoom: 1.05,
-            duration: 5,
+            duration: 2,
             ease: 'power3'
         });
         this.camera.updateProjectionMatrix();
@@ -1028,7 +1048,7 @@ class WebGL {
             duration: 2,
             ease: 'power2',
             onComplete: ()=>{
-                console.log('stopped');
+                // console.log('stopped')
                 this.objectsFlag[index1] = false;
                 this.objectsBlock = true;
             }
@@ -1045,7 +1065,7 @@ class WebGL {
                     x: this.particlesSize,
                     y: this.particlesSize,
                     z: this.particlesSize,
-                    duration: 1
+                    duration: 0.1
                 });
             }, index * 20);
         });
@@ -1079,9 +1099,40 @@ class WebGL {
         this.resetBtn.addEventListener('click', this.reset.bind(this));
     }
     reset() {
+        // ---> Global
         this.globalSpeed = 0.0035;
+        this.video.playbackRate = 2;
         this.mouseFlag = true;
         this.objectsBlock = false;
+        // ---> Light
+        _gsapDefault.default.to(this.lightObject.scale, {
+            x: 1,
+            y: 1,
+            z: 1,
+            duration: 2,
+            ease: 'power2'
+        });
+        // ---> Particles
+        this.group_particles.children.forEach((particle, index)=>{
+            particle.scale.set(0, 0, 0);
+            particle.position.x = this.particlesPosition.x[index];
+            particle.position.y = this.particlesPosition.y[index];
+            particle.position.z = this.particlesPosition.z[index];
+        });
+        // ---> Camera
+        _gsapDefault.default.to(this.camera, {
+            zoom: 1,
+            duration: 2,
+            ease: 'power3',
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        // ---> Text Mesh
+        _gsapDefault.default.to(this.textMesh.material, {
+            opacity: 0,
+            duration: 0.5
+        });
     }
     //
     // RENDER
@@ -1092,6 +1143,11 @@ class WebGL {
         window.requestAnimationFrame(this.render.bind(this));
         this.group_houses.position.z += this.globalSpeed;
         this.group_hover.position.z += this.globalSpeed;
+        console.log(this.hoveringFlag);
+        if (!this.hoveringFlag) _gsapDefault.default.to(this.textMesh.material, {
+            opacity: 0,
+            duration: 0.5
+        });
         if (this.loadedForAnimation) {
             this.refreshHousePosition();
             // ---> Hover Object & Particles

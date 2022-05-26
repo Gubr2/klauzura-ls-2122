@@ -26,12 +26,12 @@ export default class WebGL {
     //
 
     // ---> Global
-    this.globalSpeed = 0.0035
+    this.globalSpeed = 0.0035 // 0.0035
 
     // ---> Houses
     this.vDist = 0.83809
-    this.hCount = 4
-    this.vCount = 8
+    this.hCount = 4 // 4
+    this.vCount = 8 // 8
 
     this.target = new THREE.Vector3()
 
@@ -50,6 +50,11 @@ export default class WebGL {
     this.particlesCount = 30
     this.particlesMinSize = 0.01
     this.particlesMaxSize = 0.01
+    this.particlesPosition = {
+      x: [],
+      y: [],
+      z: [],
+    }
 
     // ---> Hover
     this.hoverCount = this.texts.collection.length
@@ -83,6 +88,7 @@ export default class WebGL {
 
     this.scene = new THREE.Scene()
     this.scene.fog = new THREE.Fog(this.fogColor, 4, 9)
+    this.scene.background = new THREE.Color(this.fogColor)
 
     this.width = this.container.offsetWidth
     this.height = this.container.offsetHeight
@@ -133,6 +139,7 @@ export default class WebGL {
     this.mouseFlag = true
     this.objectsFlag = []
     this.objectsBlock = false
+    this.hoveringFlag = false
 
     // Empty Variables
     this.lightSource
@@ -141,8 +148,8 @@ export default class WebGL {
     this.distance
 
     // Fonts
-    this.attacktype = new FontFace('attacktype', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/AttackType-Regular.ttf)')
-    this.craftwork = new FontFace('craftwork', 'url(https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/CraftworkGrotesk-Medium.ttf)')
+    this.attacktype = new FontFace('attacktype', 'url(./src/fonts/AttackType-Regular.ttf')
+    this.craftwork = new FontFace('craftwork', 'url(./src/fonts/CraftworkGrotesk-Medium.ttf')
 
     this.attacktype.load().then(function (font) {
       document.fonts.add(font)
@@ -197,7 +204,7 @@ export default class WebGL {
       // GLTF
       this.loader = new GLTFLoader(this.manager)
 
-      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_1.gltf', (gltf) => {
+      this.loader.load('./src/gltf/house_1.gltf', (gltf) => {
         this.house_1 = gltf.scene
 
         for (let i = 0; i < this.vCount; i++) {
@@ -214,7 +221,7 @@ export default class WebGL {
         }
       })
 
-      this.loader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/gltf/house_2.gltf', (gltf) => {
+      this.loader.load('./src/gltf/house_2.gltf', (gltf) => {
         this.house_2 = gltf.scene
 
         for (let i = 0; i < this.vCount; i++) {
@@ -312,6 +319,10 @@ export default class WebGL {
 
         this.size = 0
         this.particle.scale.set(this.size, this.size, this.size)
+
+        this.particlesPosition.x[i] = this.particle.position.x
+        this.particlesPosition.y[i] = this.particle.position.y
+        this.particlesPosition.z[i] = this.particle.position.z
       }
 
       resolve()
@@ -426,7 +437,7 @@ export default class WebGL {
         this.hoverObject.position.y = 0.1
 
         // ---> Hover Line
-        this.alphaTexture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/textures/line_alpha.png')
+        this.alphaTexture = new THREE.TextureLoader().load('./src/textures/line_alpha.png')
 
         this.line = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight), new THREE.MeshBasicMaterial({ color: 0xffffff, alphaMap: this.alphaTexture, visible: true, transparent: true, opacity: 0 }))
         this.line.name = 'line'
@@ -503,10 +514,12 @@ export default class WebGL {
       // [] --- Move Particles & Text
       if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < this.vDist / 2) {
         this.group_particles.position.x = hoverObject.position.x
-        this.group_particles.position.z += this.globalSpeed
+        this.group_particles.position.z += this.globalSpeed / 3
 
         this.textMesh.position.x = hoverObject.position.x + this.textMesh.scale.x / 2 + this.hoverTextShift
         this.textMesh.position.z += this.globalSpeed / 3
+
+        this.hoveringFlag = false
       }
 
       // [] --- Reset Particles
@@ -549,7 +562,21 @@ export default class WebGL {
             opacity: 0.25,
             duration: 1,
           })
-        } else {
+        }
+        // else if (
+        //   hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize * this.hoverUnhideFactor &&
+        //   hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize * this.hoverUnhideFactor &&
+        //   hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize * this.hoverUnhideFactor &&
+        //   hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize * this.hoverUnhideFactor &&
+        //   //
+        //   !this.objectsFlag[index]
+        // ) {
+        //   gsap.to(this.textMesh.material, {
+        //     opacity: 1,
+        //     duration: 1,
+        //   })
+        // }
+        else {
           gsap.to(hoverObject.getObjectByName('line').material, {
             opacity: 0,
             duration: 1,
@@ -567,8 +594,22 @@ export default class WebGL {
         this.objectsFlag[index]
       ) {
         // Slow Down
-        console.log('intersect')
         this.hoverAnimations(hoverObject, index)
+        this.hoveringFlag = true
+      } else if (
+        hoverObject.getWorldPosition(this.target).z <= this.lightObject.position.z + this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).z >= this.lightObject.position.z + -this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).x <= this.lightObject.position.x + this.hoverSize &&
+        hoverObject.getWorldPosition(this.target).x >= this.lightObject.position.x + -this.hoverSize &&
+        //
+        !this.objectsFlag[index]
+      ) {
+        this.hoveringFlag = true
+
+        gsap.to(this.textMesh.material, {
+          opacity: 1,
+          duration: 1,
+        })
       }
     })
   }
@@ -578,7 +619,6 @@ export default class WebGL {
   //
 
   hoverAnimations(hoverObject, index) {
-    console.log(index)
     // ---> Global
     this.globalSpeed = 0
 
@@ -586,14 +626,14 @@ export default class WebGL {
     this.video.playbackRate = 0
     gsap.to(this.video, {
       scale: 1.1,
-      duration: 5,
+      duration: 2,
       ease: 'power3',
     })
 
     // ---> Camera
     gsap.to(this.camera, {
       zoom: 1.05,
-      duration: 5,
+      duration: 2,
       ease: 'power3',
     })
     this.camera.updateProjectionMatrix()
@@ -617,7 +657,7 @@ export default class WebGL {
       duration: 2,
       ease: 'power2',
       onComplete: () => {
-        console.log('stopped')
+        // console.log('stopped')
         this.objectsFlag[index] = false
         this.objectsBlock = true
       },
@@ -639,7 +679,7 @@ export default class WebGL {
           x: this.particlesSize,
           y: this.particlesSize,
           z: this.particlesSize,
-          duration: 1,
+          duration: 0.1,
         })
       }, index * 20)
     })
@@ -682,10 +722,49 @@ export default class WebGL {
   }
 
   reset() {
+    // ---> Global
+
     this.globalSpeed = 0.0035
+    this.video.playbackRate = 2
+
     this.mouseFlag = true
 
     this.objectsBlock = false
+
+    // ---> Light
+
+    gsap.to(this.lightObject.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+      duration: 2,
+      ease: 'power2',
+    })
+
+    // ---> Particles
+    this.group_particles.children.forEach((particle, index) => {
+      particle.scale.set(0, 0, 0)
+
+      particle.position.x = this.particlesPosition.x[index]
+      particle.position.y = this.particlesPosition.y[index]
+      particle.position.z = this.particlesPosition.z[index]
+    })
+
+    // ---> Camera
+    gsap.to(this.camera, {
+      zoom: 1,
+      duration: 2,
+      ease: 'power3',
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    // ---> Text Mesh
+    gsap.to(this.textMesh.material, {
+      opacity: 0,
+      duration: 0.5,
+    })
   }
 
   //
@@ -700,6 +779,15 @@ export default class WebGL {
 
     this.group_houses.position.z += this.globalSpeed
     this.group_hover.position.z += this.globalSpeed
+
+    console.log(this.hoveringFlag)
+
+    if (!this.hoveringFlag) {
+      gsap.to(this.textMesh.material, {
+        opacity: 0,
+        duration: 0.5,
+      })
+    }
 
     if (this.loadedForAnimation) {
       this.refreshHousePosition()

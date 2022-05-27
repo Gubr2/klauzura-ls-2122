@@ -8,12 +8,18 @@
     <link rel="stylesheet" href="./styles/style.scss" />
   </head>
   <body>
-    <video muted autoplay loop>
+    <video muted autoplay loop class="video__clouds">
       <source class="clouds" src="./video/klauzura_clouds.mp4" type="video/mp4" />
     </video>
+    <video muted class="video__clouds--transition">
+      <source class="clouds__transition" src="./video/klauzura_cloud-transition.mp4" type="video/mp4" />
+    </video>
     <div class="webgl"></div>
-    <button class="reset-btn">Reset</button>
-    <button class="fullscreen-btn">Fullscreen</button>
+    <div class="btn">
+      <button class="intro-btn">Intro</button>
+      <button class="reset-btn">Reset</button>
+      <button class="fullscreen-btn">Fullscreen</button>
+    </div>
     <script src="app.js" type="module"></script>
   </body>
 </html>

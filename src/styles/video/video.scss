@@ -7,9 +7,19 @@ video {
   height: 100vh;
   object-fit: cover;
   mix-blend-mode: screen;
-  opacity: 0.75;
   pointer-events: none;
-  .clouds {
+  .clouds,
+  .clouds__transition {
     mix-blend-mode: screen;
   }
+}
+
+.video__clouds {
+  opacity: 0; // 0.75
+}
+
+.video__clouds--transition {
+  transform: translate(-50%, -50%) rotate(45deg);
+  scale: 2;
+  opacity: 0.85;
 }

@@ -564,11 +564,13 @@ class WebGL {
         // SETTINGS
         //
         // ---> Global
-        this.globalSpeed = 0.0035 // 0.0035
+        this.globalSpeed = {
+            value: 0
+        } // 0.0035
         ;
         // ---> Houses
         this.vDist = 0.83809;
-        this.hCount = 4 // 4
+        this.hCount = 8 // 4
         ;
         this.vCount = 8 // 8
         ;
@@ -579,8 +581,9 @@ class WebGL {
         this.lightObjectV = 0.2;
         this.lightObjectGrow = 0.025;
         // ---> Video
-        this.video = document.querySelector('video');
+        this.video = document.querySelector('.video__clouds');
         this.video.playbackRate = 2;
+        this.videoTransition = document.querySelector('.video__clouds--transition');
         // ---> Particles
         this.particlesCount = 30;
         this.particlesMinSize = 0.01;
@@ -597,6 +600,16 @@ class WebGL {
         this.hoverLineHeight = 0.6;
         this.hoverLineThickness = 0.0075;
         this.hoverTextShift = 0.05;
+        // ---> Camera
+        this.introValues = {
+            height: 2,
+            time: 3.5,
+            fog: {
+                near: 4,
+                far: 9
+            },
+            ease: 'power1.inOut'
+        };
         ///////////////////////////////////////////////
         ///////////////////////////////////////////////
         ///////////////////////////////////////////////
@@ -614,14 +627,16 @@ class WebGL {
         // Base
         this.container = options.dom;
         this.scene = new _three.Scene();
-        this.scene.fog = new _three.Fog(this.fogColor, 4, 9);
+        this.scene.fog = new _three.Fog(this.fogColor, 0, 8) // 4, 9
+        ;
         this.scene.background = new _three.Color(this.fogColor);
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
         this.camera = new _three.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.x = 0;
         this.camera.position.z = 4;
-        this.camera.position.y = 4;
-        this.camera.position.x = 2;
+        this.camera.position.y = 1.5;
+        this.camera.fov = 70;
         this.renderer = new _three.WebGLRenderer({
             // alpha: true,
             antialias: true
@@ -631,7 +646,7 @@ class WebGL {
         // this.renderer.toneMapping = THREE.ReinhardToneMapping
         this.container.appendChild(this.renderer.domElement);
         // Controls
-        this.controls = new _orbitControlsJs.OrbitControls(this.camera, this.renderer.domElement);
+        // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
         // Composer
         this.composer = new _effectComposerJs.EffectComposer(this.renderer);
         this.composer.setSize(this.width, this.height);
@@ -671,6 +686,7 @@ class WebGL {
         });
         // Reset Button
         this.resetBtn = document.querySelector('.reset-btn');
+        this.introBtn = document.querySelector('.intro-btn');
         // Functions
         this.resize();
         this.setupResize();
@@ -678,6 +694,7 @@ class WebGL {
         this.promises();
         this.resetHandler();
         this.render();
+        this.introHandler();
     }
     setupResize() {
         window.addEventListener('resize', this.resize.bind(this));
@@ -695,6 +712,76 @@ class WebGL {
             this.mouseX = e.pageX / this.width;
         });
     }
+    //
+    // INTRO ANIMATION
+    //
+    introHandler() {
+        this.introBtn.addEventListener('click', this.intro.bind(this));
+    }
+    intro() {
+        _gsapDefault.default.to(this.camera.position, {
+            x: 2,
+            y: 4,
+            z: 4,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.introValues, {
+            height: 0,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.camera, {
+            fov: 20,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.cameraVertical, {
+            value: 0,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.scene.fog, {
+            near: 4,
+            far: 9,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.globalSpeed, {
+            value: 0.0035,
+            duration: this.introValues.time,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.video, {
+            autoAlpha: 0.75,
+            delay: this.introValues.time / 1.5,
+            duration: this.introValues.time / 2
+        });
+        setTimeout(()=>{
+            this.videoTransition.play();
+        }, 750);
+    }
+    //
+    // OBJECTS
+    //
     addHouses() {
         return new Promise((resolve)=>{
             // GROUPS
@@ -960,9 +1047,9 @@ class WebGL {
             // [] --- Move Particles & Text
             if (hoverObject.getWorldPosition(this.target).z >= -this.vDist / 2 && hoverObject.getWorldPosition(this.target).z < this.vDist / 2) {
                 this.group_particles.position.x = hoverObject.position.x;
-                this.group_particles.position.z += this.globalSpeed / 3;
+                this.group_particles.position.z += this.globalSpeed.value / 3;
                 this.textMesh.position.x = hoverObject.position.x + this.textMesh.scale.x / 2 + this.hoverTextShift;
-                this.textMesh.position.z += this.globalSpeed / 3;
+                this.textMesh.position.z += this.globalSpeed.value / 3;
                 this.hoveringFlag = false;
             }
             // [] --- Reset Particles
@@ -1018,7 +1105,7 @@ class WebGL {
     //
     hoverAnimations(hoverObject, index1) {
         // ---> Global
-        this.globalSpeed = 0;
+        this.globalSpeed.value = 0;
         // ---> Video
         this.video.playbackRate = 0;
         _gsapDefault.default.to(this.video, {
@@ -1100,7 +1187,7 @@ class WebGL {
     }
     reset() {
         // ---> Global
-        this.globalSpeed = 0.0035;
+        this.globalSpeed.value = 0.0035;
         this.video.playbackRate = 2;
         this.mouseFlag = true;
         this.objectsBlock = false;
@@ -1141,8 +1228,8 @@ class WebGL {
         this.stats.begin();
         this.time += 0.05;
         window.requestAnimationFrame(this.render.bind(this));
-        this.group_houses.position.z += this.globalSpeed;
-        this.group_hover.position.z += this.globalSpeed;
+        this.group_houses.position.z += this.globalSpeed.value;
+        this.group_hover.position.z += this.globalSpeed.value;
         console.log(this.hoveringFlag);
         if (!this.hoveringFlag) _gsapDefault.default.to(this.textMesh.material, {
             opacity: 0,
@@ -1164,8 +1251,8 @@ class WebGL {
                 this.lightSource.position.x -= this.distance / 50;
                 this.lightObject.position.x -= this.distance / 50;
             }
-            this.camera.lookAt(0, 0, 0);
             this.composer.render();
+            this.camera.lookAt(0, this.introValues.height, 0);
         }
         this.stats.end();
     }

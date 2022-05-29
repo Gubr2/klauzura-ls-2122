@@ -40,6 +40,18 @@ body {
 .webgl {
   width: 100vw;
   height: 100vh;
+  background-color: #fff;
+}
+
+.white__cover {
+  width: 100vw;
+  height: 100vh;
+  opacity: .25;
+  background-color: #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .btn {
@@ -70,8 +82,8 @@ video .clouds, video .clouds__transition {
 }
 
 .video__clouds--transition {
-  opacity: .85;
-  transform: translate(-50%, -50%)rotate(45deg)scale3d(2, 2, 1);
+  opacity: .95;
+  transform: translate(-50%, -50%)scale3d(2, 2, 1);
 }
 
 /*# sourceMappingURL=index.38ec9247.css.map */

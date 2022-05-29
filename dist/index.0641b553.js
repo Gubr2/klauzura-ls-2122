@@ -684,9 +684,11 @@ class WebGL {
             document.fonts.add(font);
             console.log('Craftwork Loaded');
         });
-        // Reset Button
+        // Buttons
         this.resetBtn = document.querySelector('.reset-btn');
         this.introBtn = document.querySelector('.intro-btn');
+        this.readBtn = document.querySelector('.read-btn');
+        this.readBtnClose = document.querySelector('.read-btn--close');
         // Functions
         this.resize();
         this.setupResize();
@@ -695,6 +697,8 @@ class WebGL {
         this.resetHandler();
         this.render();
         this.introHandler();
+        this.readHandler();
+        this.readCloseHandler();
     }
     setupResize() {
         window.addEventListener('resize', this.resize.bind(this));
@@ -719,6 +723,11 @@ class WebGL {
         this.introBtn.addEventListener('click', this.intro.bind(this));
     }
     intro() {
+        _gsapDefault.default.to('.white__cover', {
+            autoAlpha: 0,
+            duration: this.introValues.time,
+            ease: this.introValues.ease
+        });
         _gsapDefault.default.to(this.camera.position, {
             x: 2,
             y: 4,
@@ -900,7 +909,7 @@ class WebGL {
             this.textMesh.name = 'text_mesh';
             this.textMesh.position.y = this.lightObjectV;
             this.textMesh.scale.set(0.75, 0.75);
-            this.scene.add(this.textMesh) // Obsah sa prdáva až následne počas animácie
+            this.scene.add(this.textMesh) // Obsah sa pridáva až následne počas animácie
             ;
             // this.group_text = new THREE.Group()
             // this.group_text.name = 'group_text'
@@ -990,11 +999,12 @@ class WebGL {
                 this.line.position.z = -i * this.vDist + this.vDist / 3 - this.hoverSize / 2;
                 this.line.position.x = this.positionH;
                 this.line.position.y = this.hoverLineHeight / 2;
-                // ---> Cross
+                // ---> Long Line
                 this.lineLong = new _three.Mesh(new _three.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new _three.MeshBasicMaterial({
                     color: 0xffffff,
                     visible: true,
                     transparent: true,
+                    alphaMap: this.alphaTexture,
                     opacity: 0
                 }));
                 this.lineLong.name = 'lineLong';
@@ -1110,17 +1120,16 @@ class WebGL {
         this.video.playbackRate = 0;
         _gsapDefault.default.to(this.video, {
             scale: 1.1,
-            duration: 2,
+            duration: 4,
             ease: 'power3'
         });
         // ---> Camera
         _gsapDefault.default.to(this.camera, {
             zoom: 1.05,
-            duration: 2,
+            duration: 4,
             ease: 'power3'
         });
         this.camera.updateProjectionMatrix();
-        /////////////////////////////////////
         // ---> Light
         this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x;
         this.vDistance = this.lightObject.position.z - hoverObject.getWorldPosition(this.target).z;
@@ -1164,7 +1173,7 @@ class WebGL {
         // ---> Line Long
         if (hoverObject.getObjectByName('lineLong')) {
             _gsapDefault.default.to(hoverObject.getObjectByName('lineLong').material, {
-                opacity: 0.5,
+                opacity: 1,
                 duration: 2
             });
             _gsapDefault.default.to(hoverObject.getObjectByName('lineLong').scale, {
@@ -1180,6 +1189,78 @@ class WebGL {
         this.mouseFlag = false;
     }
     //
+    // READ
+    //
+    readHandler() {
+        this.readBtn.addEventListener('click', this.read.bind(this));
+    }
+    read() {
+        _gsapDefault.default.to(this.camera.position, {
+            y: 7,
+            duration: 3,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.camera, {
+            zoom: 1,
+            duration: 3,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.video, {
+            autoAlpha: 0,
+            duration: 2,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to('.white__cover', {
+            autoAlpha: 0.25,
+            duration: this.introValues.time,
+            ease: this.introValues.ease
+        });
+        setTimeout(()=>{
+            this.videoTransition.play();
+        }, 500);
+    }
+    readCloseHandler() {
+        this.readBtnClose.addEventListener('click', this.readClose.bind(this));
+    }
+    readClose() {
+        _gsapDefault.default.to(this.camera.position, {
+            y: 4,
+            duration: 2,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to(this.video, {
+            autoAlpha: 0.75,
+            duration: 2,
+            ease: this.introValues.ease,
+            onUpdate: ()=>{
+                this.camera.updateProjectionMatrix();
+            }
+        });
+        _gsapDefault.default.to('.white__cover', {
+            autoAlpha: 0,
+            duration: this.introValues.time,
+            ease: this.introValues.ease
+        });
+        setTimeout(()=>{
+            this.videoTransition.play();
+        }, 250);
+        setTimeout(()=>{
+            this.reset();
+        }, 1000);
+    }
+    //
     // RESET
     //
     resetHandler() {
@@ -1188,9 +1269,15 @@ class WebGL {
     reset() {
         // ---> Global
         this.globalSpeed.value = 0.0035;
-        this.video.playbackRate = 2;
         this.mouseFlag = true;
         this.objectsBlock = false;
+        // ---> Video
+        this.video.playbackRate = 2;
+        _gsapDefault.default.to(this.video, {
+            scale: 1,
+            duration: 3,
+            ease: 'power3'
+        });
         // ---> Light
         _gsapDefault.default.to(this.lightObject.scale, {
             x: 1,
@@ -1209,7 +1296,7 @@ class WebGL {
         // ---> Camera
         _gsapDefault.default.to(this.camera, {
             zoom: 1,
-            duration: 2,
+            duration: 3,
             ease: 'power3',
             onUpdate: ()=>{
                 this.camera.updateProjectionMatrix();

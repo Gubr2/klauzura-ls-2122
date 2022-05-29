@@ -177,9 +177,11 @@ export default class WebGL {
       console.log('Craftwork Loaded')
     })
 
-    // Reset Button
+    // Buttons
     this.resetBtn = document.querySelector('.reset-btn')
     this.introBtn = document.querySelector('.intro-btn')
+    this.readBtn = document.querySelector('.read-btn')
+    this.readBtnClose = document.querySelector('.read-btn--close')
 
     // Functions
     this.resize()
@@ -190,6 +192,8 @@ export default class WebGL {
     this.render()
 
     this.introHandler()
+    this.readHandler()
+    this.readCloseHandler()
   }
 
   setupResize() {
@@ -221,6 +225,12 @@ export default class WebGL {
   }
 
   intro() {
+    gsap.to('.white__cover', {
+      autoAlpha: 0,
+      duration: this.introValues.time,
+      ease: this.introValues.ease,
+    })
+
     gsap.to(this.camera.position, {
       x: 2,
       y: 4,
@@ -446,7 +456,7 @@ export default class WebGL {
       this.textMesh.position.y = this.lightObjectV
       this.textMesh.scale.set(0.75, 0.75)
 
-      this.scene.add(this.textMesh) // Obsah sa prdáva až následne počas animácie
+      this.scene.add(this.textMesh) // Obsah sa pridáva až následne počas animácie
 
       // this.group_text = new THREE.Group()
       // this.group_text.name = 'group_text'
@@ -547,8 +557,8 @@ export default class WebGL {
         this.line.position.x = this.positionH
         this.line.position.y = this.hoverLineHeight / 2
 
-        // ---> Cross
-        this.lineLong = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, opacity: 0 }))
+        // ---> Long Line
+        this.lineLong = new THREE.Mesh(new THREE.PlaneGeometry(this.hoverLineThickness, this.hoverLineHeight * 1.5), new THREE.MeshBasicMaterial({ color: 0xffffff, visible: true, transparent: true, alphaMap: this.alphaTexture, opacity: 0 }))
         this.lineLong.name = 'lineLong'
         this.group_hover.add(this.lineLong)
 
@@ -726,19 +736,17 @@ export default class WebGL {
     this.video.playbackRate = 0
     gsap.to(this.video, {
       scale: 1.1,
-      duration: 2,
+      duration: 4,
       ease: 'power3',
     })
 
     // ---> Camera
     gsap.to(this.camera, {
       zoom: 1.05,
-      duration: 2,
+      duration: 4,
       ease: 'power3',
     })
     this.camera.updateProjectionMatrix()
-
-    /////////////////////////////////////
 
     // ---> Light
     this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x
@@ -795,7 +803,7 @@ export default class WebGL {
     // ---> Line Long
     if (hoverObject.getObjectByName('lineLong')) {
       gsap.to(hoverObject.getObjectByName('lineLong').material, {
-        opacity: 0.5,
+        opacity: 1,
         duration: 2,
       })
       gsap.to(hoverObject.getObjectByName('lineLong').scale, {
@@ -814,6 +822,91 @@ export default class WebGL {
   }
 
   //
+  // READ
+  //
+
+  readHandler() {
+    this.readBtn.addEventListener('click', this.read.bind(this))
+  }
+
+  read() {
+    gsap.to(this.camera.position, {
+      y: 7,
+      duration: 3,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    gsap.to(this.camera, {
+      zoom: 1,
+      duration: 3,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    gsap.to(this.video, {
+      autoAlpha: 0,
+      duration: 2,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    gsap.to('.white__cover', {
+      autoAlpha: 0.25,
+      duration: this.introValues.time,
+      ease: this.introValues.ease,
+    })
+
+    setTimeout(() => {
+      this.videoTransition.play()
+    }, 500)
+  }
+
+  readCloseHandler() {
+    this.readBtnClose.addEventListener('click', this.readClose.bind(this))
+  }
+
+  readClose() {
+    gsap.to(this.camera.position, {
+      y: 4,
+      duration: 2,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    gsap.to(this.video, {
+      autoAlpha: 0.75,
+      duration: 2,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+      },
+    })
+
+    gsap.to('.white__cover', {
+      autoAlpha: 0,
+      duration: this.introValues.time,
+      ease: this.introValues.ease,
+    })
+
+    setTimeout(() => {
+      this.videoTransition.play()
+    }, 250)
+
+    setTimeout(() => {
+      this.reset()
+    }, 1000)
+  }
+
+  //
   // RESET
   //
 
@@ -825,11 +918,19 @@ export default class WebGL {
     // ---> Global
 
     this.globalSpeed.value = 0.0035
-    this.video.playbackRate = 2
 
     this.mouseFlag = true
 
     this.objectsBlock = false
+
+    // ---> Video
+    this.video.playbackRate = 2
+
+    gsap.to(this.video, {
+      scale: 1,
+      duration: 3,
+      ease: 'power3',
+    })
 
     // ---> Light
 
@@ -853,7 +954,7 @@ export default class WebGL {
     // ---> Camera
     gsap.to(this.camera, {
       zoom: 1,
-      duration: 2,
+      duration: 3,
       ease: 'power3',
       onUpdate: () => {
         this.camera.updateProjectionMatrix()

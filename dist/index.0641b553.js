@@ -720,6 +720,16 @@ class WebGL {
         });
     }
     //
+    // LOADING
+    //
+    loadingCover() {
+        _gsapDefault.default.to('.white__cover', {
+            autoAlpha: 0.25,
+            duration: 2,
+            ease: 'power3.inOut'
+        });
+    }
+    //
     // INTRO ANIMATION
     //
     introHandler() {
@@ -790,6 +800,9 @@ class WebGL {
         setTimeout(()=>{
             this.videoTransition.play();
         }, 750);
+        //
+        this.ui.introHide();
+        this.ui.recolorIcons();
     }
     //
     // OBJECTS
@@ -1038,6 +1051,7 @@ class WebGL {
         ]).then(()=>{
             console.log('resolved');
             this.loadedForAnimation = true;
+            this.loadingCover();
         });
     }
     //
@@ -39416,8 +39430,126 @@ parcelHelpers.defineInteropFlag(exports);
 var _gsap = require("gsap");
 var _gsapDefault = parcelHelpers.interopDefault(_gsap);
 class UI {
-    constructor(){}
-    intro() {}
+    constructor(){
+        this.introAnimations();
+        this.reveal();
+    }
+    introAnimations() {
+        _gsapDefault.default.fromTo('.ui__intro__title span', {
+            autoAlpha: 0.25,
+            y: 'random(5%, -5%)'
+        }, {
+            delay: 0.5,
+            duration: 2,
+            ease: 'power3.out',
+            autoAlpha: 1,
+            y: '0%',
+            stagger: {
+                from: 'center',
+                amount: 0.5,
+                axis: 'x'
+            }
+        });
+        _gsapDefault.default.fromTo('.ui__intro--btn', {
+            autoAlpha: 0,
+            scale: 0.8
+        }, {
+            delay: 1.5,
+            duration: 2,
+            ease: 'power3.out',
+            autoAlpha: 1,
+            scale: 1,
+            onComplete: ()=>{
+                document.querySelector('.ui__intro--btn').style.transition = '1s ease-in-out';
+            }
+        });
+        _gsapDefault.default.fromTo('.ui__intro__symbol--line', {
+            scaleY: 0,
+            y: '-20%'
+        }, {
+            delay: 0.5,
+            scaleY: 1,
+            y: 0,
+            duration: 1,
+            delay: 0.5,
+            ease: 'expo.out',
+            transformOrigin: 'top'
+        });
+        _gsapDefault.default.fromTo('.ui__intro__symbol--circle', {
+            y: '-200%'
+        }, {
+            delay: 0.5,
+            y: 0,
+            // scaleY: 1,
+            duration: 1,
+            ease: 'expo.out',
+            transformOrigin: 'top'
+        });
+        _gsapDefault.default.fromTo('.ui__intro__symbol', {
+            autoAlpha: 0
+        }, {
+            autoAlpha: 1,
+            delay: 0.5,
+            duration: 2,
+            ease: 'expo.out',
+            transformOrigin: 'top'
+        });
+    }
+    reveal() {
+        _gsapDefault.default.fromTo('[data-reveal="ui"]', {
+            autoAlpha: 0,
+            y: '-20%'
+        }, {
+            autoAlpha: 1,
+            y: '0%',
+            duration: 1.5,
+            stagger: 0.1,
+            delay: 1,
+            onComplete: ()=>{
+                document.querySelectorAll('[data-reveal="ui"]').forEach((element)=>{
+                    element.style.transition = '0.5s';
+                });
+            }
+        });
+    }
+    introHide() {
+        _gsapDefault.default.to('.ui__intro__title span', {
+            duration: 2,
+            ease: 'power3.out',
+            autoAlpha: 0,
+            y: 'random(5%, -5%)',
+            stagger: {
+                from: 'center',
+                amount: 0.5,
+                axis: 'x'
+            }
+        });
+        _gsapDefault.default.to('.ui__intro__symbol', {
+            autoAlpha: 0,
+            duration: 2,
+            ease: 'expo.out',
+            transformOrigin: 'top'
+        });
+        _gsapDefault.default.to('.ui__intro--btn', {
+            duration: 1,
+            ease: 'power3.out',
+            autoAlpha: 0,
+            scale: 0.8
+        });
+        _gsapDefault.default.to('.ui__top [data-reveal="ui"]', {
+            autoAlpha: 0,
+            stagger: 0.5,
+            duration: 1,
+            ease: 'power3.out'
+        });
+    }
+    recolorIcons() {
+        _gsapDefault.default.to('[data-reveal="ui"]', {
+            color: '#fff',
+            delay: 0.5,
+            duration: 1.5
+        });
+    }
 }
 exports.default = UI;
 
@@ -39427,7 +39559,7 @@ parcelHelpers.defineInteropFlag(exports);
 class Fullscreen {
     constructor(){
         this.elem = document.documentElement;
-        this.button = document.querySelector('.fullscreen-btn');
+        this.button = document.querySelector('.ui__bottom__fullscreen--btn');
         this.buttonFlag = true;
         this.buttonHandler();
     }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klauzúra LS-21/22</title>
     <link rel="stylesheet" href="/index.38ec9247.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   </head>
   <body>
     <video muted="" autoplay="" loop="" class="video__clouds">
@@ -15,6 +16,7 @@
       <source class="clouds__transition" src="/klauzura_cloud-transition.3e233e17.mp4" type="video/mp4">
     </video>
     <div class="ui">
+      <!-- Intro -->
       <div class="ui__intro">
         <div class="ui__intro__symbol">
           <div class="ui__intro__symbol--line"></div>
@@ -58,12 +60,23 @@
           <div class="--background"></div>
         </div>
       </div>
+
+      <!-- Top -->
+      <div class="ui__top">
+        <span data-reveal="ui">About</span>
+        <span data-reveal="ui">All Stories</span>
+      </div>
+
+      <!-- Bottom -->
+      <div class="ui__bottom">
+        <span data-reveal="ui" class="ui__bottom__sound--btn material-symbols-outlined">volume_up</span>
+        <span data-reveal="ui" class="ui__bottom__fullscreen--btn material-symbols-outlined">fullscreen</span>
+      </div>
     </div>
     <div class="webgl"></div>
     <div class="white__cover"></div>
     <div class="btn">
       <button class="reset-btn">Reset</button>
-      <button class="fullscreen-btn">Fullscreen</button>
       <button class="read-btn">Read</button>
       <button class="read-btn--close">Close Read</button>
     </div>

@@ -39,15 +39,15 @@ table {
   }
 
   25% {
-    transform: translate(-48%, -52%)scaleX(.95)scaleY(1.1)rotate(-1deg);
+    transform: translate(-46%, -54%)scaleX(.95)scaleY(1.1)rotate(-1deg);
   }
 
   50% {
-    transform: translate(-52%, -50%)scaleX(1.05)scaleY(1)rotate(.5deg);
+    transform: translate(-54%, -50%)scaleX(1.05)scaleY(1)rotate(.5deg);
   }
 
   75% {
-    transform: translate(-50%, -48%)scaleX(.9)scaleY(1.05)rotate(-.5deg);
+    transform: translate(-50%, -46%)scaleX(.9)scaleY(1.05)rotate(-.5deg);
   }
 
   100% {
@@ -91,6 +91,10 @@ body {
   font-style: normal;
 }
 
+[data-type="attack"] {
+  font-family: attack_typeregular;
+}
+
 .ui {
   width: 100vw;
   height: 100vh;
@@ -106,7 +110,7 @@ body {
   align-items: center;
   display: flex;
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
@@ -154,7 +158,6 @@ body {
   width: 30rem;
   height: 10rem;
   margin-top: 5rem;
-  transition: all 1s ease-in-out;
   position: relative;
 }
 
@@ -205,8 +208,51 @@ body {
   transform: translate(-50%, -50%)rotate(-1deg);
 }
 
-[data-type="attack"] {
-  font-family: attack_typeregular;
+.ui__top {
+  width: 100%;
+  height: 11rem;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 5.5rem;
+  padding: 0 2.4rem;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ui__top span {
+  color: #25261e;
+  cursor: pointer;
+  font-family: work_sansmedium;
+  font-size: 1.4rem;
+}
+
+.ui__top span:hover {
+  opacity: .75 !important;
+}
+
+.ui__bottom {
+  width: 100%;
+  height: 6.5rem;
+  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2.4rem;
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.ui__bottom span {
+  color: #25261e;
+  cursor: pointer;
+}
+
+.ui__bottom span:hover {
+  opacity: .75 !important;
 }
 
 .webgl {
@@ -218,7 +264,6 @@ body {
 .white__cover {
   width: 100vw;
   height: 100vh;
-  opacity: .25;
   background-color: #fff;
   position: absolute;
   top: 0;
@@ -226,6 +271,7 @@ body {
 }
 
 .btn {
+  z-index: 9999;
   position: absolute;
   bottom: 5rem;
   left: 50%;

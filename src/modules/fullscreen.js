@@ -2,7 +2,7 @@ export default class Fullscreen {
   constructor() {
     this.elem = document.documentElement
 
-    this.button = document.querySelector('.fullscreen-btn')
+    this.button = document.querySelector('.ui__bottom__fullscreen--btn')
     this.buttonFlag = true
     this.buttonHandler()
   }

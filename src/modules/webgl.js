@@ -219,6 +219,18 @@ export default class WebGL {
   }
 
   //
+  // LOADING
+  //
+
+  loadingCover() {
+    gsap.to('.white__cover', {
+      autoAlpha: 0.25,
+      duration: 2,
+      ease: 'power3.inOut',
+    })
+  }
+
+  //
   // INTRO ANIMATION
   //
 
@@ -299,6 +311,11 @@ export default class WebGL {
     setTimeout(() => {
       this.videoTransition.play()
     }, 750)
+
+    //
+
+    this.ui.introHide()
+    this.ui.recolorIcons()
   }
 
   //
@@ -595,6 +612,7 @@ export default class WebGL {
     ]).then(() => {
       console.log('resolved')
       this.loadedForAnimation = true
+      this.loadingCover()
     })
   }
 

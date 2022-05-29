@@ -550,6 +550,8 @@ var _fontLoaderJs = require("three/examples/jsm/loaders/FontLoader.js");
 var _textGeometryJs = require("three/examples/jsm/geometries/TextGeometry.js");
 var _texts = require("./texts");
 var _textsDefault = parcelHelpers.interopDefault(_texts);
+var _ui = require("./ui");
+var _uiDefault = parcelHelpers.interopDefault(_ui);
 var _statsJs = require("stats.js");
 var _statsJsDefault = parcelHelpers.interopDefault(_statsJs);
 var _gsap = require("gsap");
@@ -560,6 +562,7 @@ class WebGL {
         // IMPORTS
         //
         this.texts = new _textsDefault.default();
+        this.ui = new _uiDefault.default();
         //
         // SETTINGS
         //
@@ -686,7 +689,7 @@ class WebGL {
         });
         // Buttons
         this.resetBtn = document.querySelector('.reset-btn');
-        this.introBtn = document.querySelector('.intro-btn');
+        this.introBtn = document.querySelector('.ui__intro--btn');
         this.readBtn = document.querySelector('.read-btn');
         this.readBtnClose = document.querySelector('.read-btn--close');
         // Functions
@@ -1346,7 +1349,7 @@ class WebGL {
 }
 exports.default = WebGL;
 
-},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE","three/examples/jsm/loaders/FontLoader.js":"h0CPK","three/examples/jsm/geometries/TextGeometry.js":"d5vi9","./texts":"cXbSw"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE","three/examples/jsm/loaders/FontLoader.js":"h0CPK","three/examples/jsm/geometries/TextGeometry.js":"d5vi9","./texts":"cXbSw","./ui":"lFOPJ"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping
@@ -39407,7 +39410,18 @@ class Texts {
 }
 exports.default = Texts;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2hA5I":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lFOPJ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _gsap = require("gsap");
+var _gsapDefault = parcelHelpers.interopDefault(_gsap);
+class UI {
+    constructor(){}
+    intro() {}
+}
+exports.default = UI;
+
+},{"gsap":"fPSuC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2hA5I":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class Fullscreen {

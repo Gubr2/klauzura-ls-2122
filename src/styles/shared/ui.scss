@@ -1,0 +1,65 @@
+.ui {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+}
+
+.ui__intro {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui__intro__title {
+  font-size: 3.7rem;
+  font-family: 'work_sansregular';
+  color: $black;
+  display: flex;
+  gap: calc(3.7rem / 7);
+  span {
+    display: inline-flex;
+    // overflow: hidden;
+    align-items: baseline;
+    span {
+      display: inline-block;
+    }
+  }
+}
+
+.ui__intro__symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8rem;
+  &--line {
+    width: 0.2rem;
+    height: 6.9rem;
+    background-color: $black;
+  }
+  &--circle {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    background-color: $black;
+    margin-top: -5.5rem;
+  }
+}
+
+.ui__intro--btn {
+  @include button;
+}
+
+//
+
+[data-type='attack'] {
+  font-family: 'attack_typeregular';
+}

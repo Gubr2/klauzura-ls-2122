@@ -1,0 +1,75 @@
+$black: #25261e;
+$white: #fff;
+
+// Mixins
+@mixin button() {
+  position: relative;
+  margin-top: 5rem;
+  width: 30rem;
+  height: 10rem;
+  transition: 1s ease-in-out;
+  .--background {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(50% 50% at 50% 50%, rgba($color: $black, $alpha: 1) 0%, rgba($color: $black, $alpha: 0) 100%);
+    cursor: pointer;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transition: 1s ease-in-out;
+    animation: scale 10s infinite;
+    &:nth-child(1) {
+      opacity: 1;
+    }
+    &:nth-child(2) {
+      opacity: 0;
+      background: radial-gradient(50% 50% at 50% 50%, rgba($color: $black, $alpha: 1) 25%, rgba($color: $black, $alpha: 0) 100%);
+    }
+  }
+  span {
+    color: $white;
+    font-size: 1.8rem;
+    font-family: 'work_sansregular';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: 0.5s ease-in-out;
+    pointer-events: none;
+  }
+  &:hover {
+    transform: scale(1.05) rotate(1deg);
+    .--background {
+      &:nth-child(2) {
+        opacity: 1;
+      }
+    }
+    span {
+      transform: translate(-50%, -50%) rotate(-1deg);
+      opacity: 0.75;
+    }
+  }
+}
+
+@keyframes scale {
+  0% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-48%, -52%) scaleX(0.95) scaleY(1.1) rotate(-1deg);
+  }
+
+  50% {
+    transform: translate(-52%, -50%) scaleX(1.05) scaleY(1) rotate(0.5deg);
+  }
+
+  75% {
+    transform: translate(-50%, -48%) scaleX(0.9) scaleY(1.05) rotate(-0.5deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1) rotate(0deg);
+  }
+}

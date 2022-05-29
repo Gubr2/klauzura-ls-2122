@@ -9,6 +9,7 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 
 import Texts from './texts'
+import UI from './ui'
 
 import Stats from 'stats.js'
 import gsap from 'gsap'
@@ -20,6 +21,7 @@ export default class WebGL {
     //
 
     this.texts = new Texts()
+    this.ui = new UI()
 
     //
     // SETTINGS
@@ -179,7 +181,7 @@ export default class WebGL {
 
     // Buttons
     this.resetBtn = document.querySelector('.reset-btn')
-    this.introBtn = document.querySelector('.intro-btn')
+    this.introBtn = document.querySelector('.ui__intro--btn')
     this.readBtn = document.querySelector('.read-btn')
     this.readBtnClose = document.querySelector('.read-btn--close')
 

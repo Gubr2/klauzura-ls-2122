@@ -1,6 +1,9 @@
 // Shared
 @import './shared/reset.scss';
+@import './shared/variables.scss';
 @import './shared/base.scss';
+@import './shared/fonts.scss';
+@import './shared/ui.scss';
 
 // Webgl
 @import './webgl/webgl.scss';

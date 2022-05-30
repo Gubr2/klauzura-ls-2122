@@ -11,11 +11,11 @@ export default class UI {
       '.ui__intro__title span',
       {
         autoAlpha: 0.25,
-        y: 'random(5%, -5%)',
+        y: 'random(2.5%, -2.5%)',
       },
       {
         delay: 0.5,
-        duration: 2,
+        duration: 3,
         ease: 'power3.out',
         autoAlpha: 1,
         y: '0%',
@@ -155,6 +155,105 @@ export default class UI {
       color: '#fff',
       delay: 0.5,
       duration: 1.5,
+    })
+  }
+
+  introText() {
+    return new Promise((resolve) => {
+      this.tl = gsap.timeline()
+
+      this.tl.fromTo(
+        '.ui__intro__text--1 span span',
+        {
+          autoAlpha: 0,
+          y: 'random(2%, -2%)',
+        },
+        {
+          duration: 3,
+          ease: 'power3.out',
+          autoAlpha: 1,
+          y: '0%',
+          stagger: {
+            amount: 0.5,
+            axis: 'x',
+          },
+        }
+      )
+
+      this.tl.to('.ui__intro__text--1 span span', {
+        autoAlpha: 0,
+        ease: 'power3.out',
+        duration: 1.5,
+        delay: 1,
+      })
+
+      this.tl.fromTo(
+        '.ui__intro__text--2 span span',
+        {
+          autoAlpha: 0,
+          y: 'random(2%, -2%)',
+        },
+        {
+          duration: 3,
+          ease: 'power3.out',
+          autoAlpha: 1,
+          y: '0%',
+          stagger: {
+            amount: 0.5,
+            axis: 'x',
+          },
+        }
+      )
+
+      this.tl.to('.ui__intro__text--2 span span', {
+        autoAlpha: 0,
+        ease: 'power3.out',
+        duration: 1.5,
+        delay: 1,
+        onStart: () => {
+          gsap.to('.ui__intro__text--icon', {
+            delay: 2,
+            autoAlpha: 1,
+            duration: 2,
+          })
+        },
+      })
+
+      this.tl.fromTo(
+        '.ui__intro__text--3 span span',
+        {
+          autoAlpha: 0,
+          y: 'random(2%, -2%)',
+        },
+        {
+          duration: 3,
+          ease: 'power3.out',
+          autoAlpha: 1,
+          y: '0%',
+          stagger: {
+            amount: 0.5,
+            axis: 'x',
+          },
+          onComplete: () => {
+            resolve()
+
+            document.addEventListener('mousemove', (e) => {
+              gsap.to('.ui__intro__text--3 span span', {
+                autoAlpha: 0,
+                ease: 'power3.out',
+                duration: 1.5,
+                delay: 1,
+              })
+              gsap.to('.ui__intro__text--icon', {
+                autoAlpha: 0,
+                ease: 'power3.out',
+                duration: 1.5,
+                delay: 1,
+              })
+            })
+          },
+        }
+      )
     })
   }
 }

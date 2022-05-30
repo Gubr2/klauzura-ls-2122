@@ -531,12 +531,16 @@ var _webgl = require("./modules/webgl");
 var _webglDefault = parcelHelpers.interopDefault(_webgl);
 var _fullscreen = require("./modules/fullscreen");
 var _fullscreenDefault = parcelHelpers.interopDefault(_fullscreen);
+var _separate = require("./modules/separate");
+var _separateDefault = parcelHelpers.interopDefault(_separate);
 const webgl = new _webglDefault.default({
     dom: document.querySelector('.webgl')
 });
 const fullscreen = new _fullscreenDefault.default();
+const separate = new _separateDefault.default();
+separate.separate('[data-separate]');
 
-},{"./modules/webgl":"1KQMQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./modules/fullscreen":"2hA5I"}],"1KQMQ":[function(require,module,exports) {
+},{"./modules/webgl":"1KQMQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./modules/fullscreen":"2hA5I","./modules/separate":"f3Ntu"}],"1KQMQ":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
@@ -581,7 +585,7 @@ class WebGL {
         // ---> Fog
         this.fogColor = 0xf5eedf;
         // ---> Light Object
-        this.lightObjectV = 0.2;
+        this.lightObjectY = 0.2;
         this.lightObjectGrow = 0.025;
         // ---> Video
         this.video = document.querySelector('.video__clouds');
@@ -606,7 +610,7 @@ class WebGL {
         // ---> Camera
         this.introValues = {
             height: 2,
-            time: 3.5,
+            time: 4.5,
             fog: {
                 near: 4,
                 far: 9
@@ -667,7 +671,7 @@ class WebGL {
         // Flags
         this.loadedForAnimation = false;
         this.hoverFlag = true;
-        this.mouseFlag = true;
+        this.mouseFlag = false;
         this.objectsFlag = [];
         this.objectsBlock = false;
         this.hoveringFlag = false;
@@ -736,6 +740,28 @@ class WebGL {
         this.introBtn.addEventListener('click', this.intro.bind(this));
     }
     intro() {
+        // Lightobject
+        _gsapDefault.default.fromTo(this.lightObject.position, {
+            y: 3
+        }, {
+            y: this.lightObjectY,
+            duration: 3,
+            ease: this.introValues.ease,
+            onComplete: ()=>{
+                this.lightObject.position.y = 0.2;
+            }
+        });
+        _gsapDefault.default.fromTo(this.lightSource.position, {
+            y: 3
+        }, {
+            y: this.lightObjectY,
+            duration: 3,
+            ease: this.introValues.ease,
+            onComplete: ()=>{
+                this.lightSource.position.y = 0.2;
+            }
+        });
+        // Rest
         _gsapDefault.default.to('.white__cover', {
             autoAlpha: 0,
             duration: this.introValues.time,
@@ -800,6 +826,11 @@ class WebGL {
         setTimeout(()=>{
             this.videoTransition.play();
         }, 750);
+        setTimeout(()=>{
+            this.ui.introText().then(()=>{
+                this.mouseFlag = true;
+            });
+        }, 4000);
         //
         this.ui.introHide();
         this.ui.recolorIcons();
@@ -876,8 +907,8 @@ class WebGL {
                 emissive: 0xffffff,
                 emissiveIntensity: 1
             }));
-            this.lightObject.position.y = this.lightObjectV;
-            this.lightSource.position.y = this.lightObjectV;
+            this.lightObject.position.y = 2;
+            this.lightSource.position.y = 2;
             this.scene.add(this.lightSource);
             this.scene.add(this.lightObject);
             resolve();
@@ -887,7 +918,7 @@ class WebGL {
         return new Promise((resolve)=>{
             this.group_particles = new _three.Group();
             this.group_particles.name = 'group_paricles';
-            this.group_particles.position.y = this.lightObjectV;
+            this.group_particles.position.y = this.lightObjectY;
             this.scene.add(this.group_particles);
             for(let i = 0; i < this.particlesCount; i++){
                 this.particle = new _three.Mesh(new _three.BoxGeometry(this.particlesSize, this.particlesSize, this.particlesSize), new _three.MeshBasicMaterial({
@@ -897,7 +928,7 @@ class WebGL {
                 this.group_particles.add(this.particle);
                 this.particle.position.x = this.randomGenerator(-0.2, 0.2);
                 this.particle.position.z = this.randomGenerator(-0.2, 0.2);
-                this.particle.position.y = -this.lightObjectV;
+                this.particle.position.y = -this.lightObjectY;
                 this.size = 0;
                 this.particle.scale.set(this.size, this.size, this.size);
                 this.particlesPosition.x[i] = this.particle.position.x;
@@ -923,13 +954,13 @@ class WebGL {
                 opacity: 0
             }));
             this.textMesh.name = 'text_mesh';
-            this.textMesh.position.y = this.lightObjectV;
+            this.textMesh.position.y = this.lightObjectY;
             this.textMesh.scale.set(0.75, 0.75);
             this.scene.add(this.textMesh) // Obsah sa pridáva až následne počas animácie
             ;
             // this.group_text = new THREE.Group()
             // this.group_text.name = 'group_text'
-            // this.group_text.position.y = this.lightObjectV
+            // this.group_text.position.y = this.lightObjectY
             // this.scene.add(this.group_text)
             // this.fontLoader.load('https://raw.githubusercontent.com/Gubr2/klauzura-ls-2122/main/src/fonts/helvetiker_regular.typeface.json', (font) => {
             //   // ---> Number
@@ -983,7 +1014,7 @@ class WebGL {
         return new Promise((resolve)=>{
             this.group_hover = new _three.Group();
             this.group_hover.name = 'group_hover';
-            this.group_hover.position.z = -this.vDist * 2;
+            this.group_hover.position.z = -this.vDist * 6;
             this.scene.add(this.group_hover);
             for(let i = 0; i < this.hoverCount; i++){
                 // ---> Hover Object
@@ -39437,10 +39468,10 @@ class UI {
     introAnimations() {
         _gsapDefault.default.fromTo('.ui__intro__title span', {
             autoAlpha: 0.25,
-            y: 'random(5%, -5%)'
+            y: 'random(2.5%, -2.5%)'
         }, {
             delay: 0.5,
-            duration: 2,
+            duration: 3,
             ease: 'power3.out',
             autoAlpha: 1,
             y: '0%',
@@ -39550,6 +39581,86 @@ class UI {
             duration: 1.5
         });
     }
+    introText() {
+        return new Promise((resolve)=>{
+            this.tl = _gsapDefault.default.timeline();
+            this.tl.fromTo('.ui__intro__text--1 span span', {
+                autoAlpha: 0,
+                y: 'random(2%, -2%)'
+            }, {
+                duration: 3,
+                ease: 'power3.out',
+                autoAlpha: 1,
+                y: '0%',
+                stagger: {
+                    amount: 0.5,
+                    axis: 'x'
+                }
+            });
+            this.tl.to('.ui__intro__text--1 span span', {
+                autoAlpha: 0,
+                ease: 'power3.out',
+                duration: 1.5,
+                delay: 1
+            });
+            this.tl.fromTo('.ui__intro__text--2 span span', {
+                autoAlpha: 0,
+                y: 'random(2%, -2%)'
+            }, {
+                duration: 3,
+                ease: 'power3.out',
+                autoAlpha: 1,
+                y: '0%',
+                stagger: {
+                    amount: 0.5,
+                    axis: 'x'
+                }
+            });
+            this.tl.to('.ui__intro__text--2 span span', {
+                autoAlpha: 0,
+                ease: 'power3.out',
+                duration: 1.5,
+                delay: 1,
+                onStart: ()=>{
+                    _gsapDefault.default.to('.ui__intro__text--icon', {
+                        delay: 2,
+                        autoAlpha: 1,
+                        duration: 2
+                    });
+                }
+            });
+            this.tl.fromTo('.ui__intro__text--3 span span', {
+                autoAlpha: 0,
+                y: 'random(2%, -2%)'
+            }, {
+                duration: 3,
+                ease: 'power3.out',
+                autoAlpha: 1,
+                y: '0%',
+                stagger: {
+                    amount: 0.5,
+                    axis: 'x'
+                },
+                onComplete: ()=>{
+                    resolve();
+                    document.addEventListener('mousemove', (e)=>{
+                        _gsapDefault.default.to('.ui__intro__text--3 span span', {
+                            autoAlpha: 0,
+                            ease: 'power3.out',
+                            duration: 1.5,
+                            delay: 1
+                        });
+                        _gsapDefault.default.to('.ui__intro__text--icon', {
+                            autoAlpha: 0,
+                            ease: 'power3.out',
+                            duration: 1.5,
+                            delay: 1
+                        });
+                    });
+                }
+            });
+        });
+    }
 }
 exports.default = UI;
 
@@ -39584,6 +39695,57 @@ class Fullscreen {
     }
 }
 exports.default = Fullscreen;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f3Ntu":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class TextSeparate {
+    constructor(){}
+    separate(selector) {
+        this.text = document.querySelectorAll(selector);
+        this.text.forEach((text)=>{
+            this.toLetter = [];
+            this.joinedLetters = [];
+            this.toWords = text.innerHTML.split(' ');
+            this.toWords.forEach((word, index)=>{
+                this.toLetter[index] = word.split('');
+            });
+            this.toLetter.forEach((letter, index)=>{
+                this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>';
+            });
+            this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>';
+            text.innerHTML = this.joinedWords;
+        });
+    }
+    separateObject(selector) {
+        this.text = selector;
+        this.text.forEach((text, index1)=>{
+            this.toLetter = [];
+            this.joinedLetters = [];
+            this.toWords = text.split(' ');
+            this.toWords.forEach((word, index)=>{
+                this.toLetter[index] = word.split('');
+            });
+            this.toLetter.forEach((letter, index)=>{
+                this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>';
+            });
+            this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>';
+            selector[index1] = this.joinedWords;
+        });
+    }
+    createTags(selector) {
+        this.text = selector;
+        this.text.forEach((text, index)=>{
+            this.text[index] = text.toString();
+            this.toLetter = [];
+            this.joinedLetters = [];
+            this.toWords = this.text[index].split(',');
+            this.joinedWords = '<p class="tag">' + this.toWords.join('</p><p class="tag">') + '</p>';
+            selector[index] = this.joinedWords;
+        });
+    }
+}
+exports.default = TextSeparate;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["jKwHT","bNKaB"], "bNKaB", "parcelRequire3d27")
 

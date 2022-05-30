@@ -43,7 +43,7 @@ export default class WebGL {
     this.fogColor = 0xf5eedf
 
     // ---> Light Object
-    this.lightObjectV = 0.2
+    this.lightObjectY = 0.2
     this.lightObjectGrow = 0.025
 
     // ---> Video
@@ -73,7 +73,7 @@ export default class WebGL {
     // ---> Camera
     this.introValues = {
       height: 2,
-      time: 3.5,
+      time: 4.5,
       fog: {
         near: 4,
         far: 9,
@@ -154,7 +154,7 @@ export default class WebGL {
     // Flags
     this.loadedForAnimation = false
     this.hoverFlag = true
-    this.mouseFlag = true
+    this.mouseFlag = false
     this.objectsFlag = []
     this.objectsBlock = false
     this.hoveringFlag = false
@@ -239,6 +239,40 @@ export default class WebGL {
   }
 
   intro() {
+    // Lightobject
+
+    gsap.fromTo(
+      this.lightObject.position,
+      {
+        y: 3,
+      },
+      {
+        y: this.lightObjectY,
+        duration: 3,
+        ease: this.introValues.ease,
+        onComplete: () => {
+          this.lightObject.position.y = 0.2
+        },
+      }
+    )
+
+    gsap.fromTo(
+      this.lightSource.position,
+      {
+        y: 3,
+      },
+      {
+        y: this.lightObjectY,
+        duration: 3,
+        ease: this.introValues.ease,
+        onComplete: () => {
+          this.lightSource.position.y = 0.2
+        },
+      }
+    )
+
+    // Rest
+
     gsap.to('.white__cover', {
       autoAlpha: 0,
       duration: this.introValues.time,
@@ -312,12 +346,17 @@ export default class WebGL {
       this.videoTransition.play()
     }, 750)
 
+    setTimeout(() => {
+      this.ui.introText().then(() => {
+        this.mouseFlag = true
+      })
+    }, 4000)
+
     //
 
     this.ui.introHide()
     this.ui.recolorIcons()
   }
-
   //
   // OBJECTS
   //
@@ -419,8 +458,8 @@ export default class WebGL {
         })
       )
 
-      this.lightObject.position.y = this.lightObjectV
-      this.lightSource.position.y = this.lightObjectV
+      this.lightObject.position.y = 2
+      this.lightSource.position.y = 2
 
       this.scene.add(this.lightSource)
       this.scene.add(this.lightObject)
@@ -434,7 +473,7 @@ export default class WebGL {
       this.group_particles = new THREE.Group()
       this.group_particles.name = 'group_paricles'
 
-      this.group_particles.position.y = this.lightObjectV
+      this.group_particles.position.y = this.lightObjectY
 
       this.scene.add(this.group_particles)
 
@@ -444,7 +483,7 @@ export default class WebGL {
 
         this.particle.position.x = this.randomGenerator(-0.2, 0.2)
         this.particle.position.z = this.randomGenerator(-0.2, 0.2)
-        this.particle.position.y = -this.lightObjectV
+        this.particle.position.y = -this.lightObjectY
 
         this.size = 0
         this.particle.scale.set(this.size, this.size, this.size)
@@ -472,7 +511,7 @@ export default class WebGL {
       // ---> Mesh
       this.textMesh = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial({ map: this.textTexture, transparent: true, opacity: 0 }))
       this.textMesh.name = 'text_mesh'
-      this.textMesh.position.y = this.lightObjectV
+      this.textMesh.position.y = this.lightObjectY
       this.textMesh.scale.set(0.75, 0.75)
 
       this.scene.add(this.textMesh) // Obsah sa pridáva až následne počas animácie
@@ -480,7 +519,7 @@ export default class WebGL {
       // this.group_text = new THREE.Group()
       // this.group_text.name = 'group_text'
 
-      // this.group_text.position.y = this.lightObjectV
+      // this.group_text.position.y = this.lightObjectY
 
       // this.scene.add(this.group_text)
 
@@ -548,7 +587,7 @@ export default class WebGL {
       this.group_hover = new THREE.Group()
       this.group_hover.name = 'group_hover'
 
-      this.group_hover.position.z = -this.vDist * 2
+      this.group_hover.position.z = -this.vDist * 6
 
       this.scene.add(this.group_hover)
 

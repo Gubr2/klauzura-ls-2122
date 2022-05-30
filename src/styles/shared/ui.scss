@@ -106,3 +106,49 @@
     }
   }
 }
+
+// Intro Text
+.ui__intro__text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  text-align: center;
+  font-family: 'work_sansregular';
+  font-size: 2rem;
+  color: $white;
+  span {
+    span {
+      opacity: 0;
+      display: inline-block;
+    }
+  }
+}
+
+.ui__intro__text--icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 125%);
+  color: $white;
+  opacity: 0;
+  span {
+    font-size: 2.5rem;
+    animation: mouse 4s cubic-bezier(0.83, 0, 0.17, 1) infinite;
+  }
+}
+
+@keyframes mouse {
+  0% {
+    transform: translateX(-3rem) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateX(3rem) rotate(5deg);
+  }
+
+  100% {
+    transform: translateX(-3rem) rotate(-5deg);
+  }
+}

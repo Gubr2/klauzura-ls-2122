@@ -2,24 +2,28 @@ export default class TextSeparate {
   constructor() {}
 
   separate(selector) {
-    this.text = document.querySelectorAll(selector)
+    return new Promise((resolve) => {
+      this.text = document.querySelectorAll(selector)
 
-    this.text.forEach((text) => {
-      this.toLetter = []
-      this.joinedLetters = []
+      this.text.forEach((text) => {
+        this.toLetter = []
+        this.joinedLetters = []
 
-      this.toWords = text.innerHTML.split(' ')
+        this.toWords = text.innerHTML.split(' ')
 
-      this.toWords.forEach((word, index) => {
-        this.toLetter[index] = word.split('')
+        this.toWords.forEach((word, index) => {
+          this.toLetter[index] = word.split('')
+        })
+
+        this.toLetter.forEach((letter, index) => {
+          this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>'
+        })
+
+        this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>'
+        text.innerHTML = this.joinedWords
+
+        resolve()
       })
-
-      this.toLetter.forEach((letter, index) => {
-        this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>'
-      })
-
-      this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>'
-      text.innerHTML = this.joinedWords
     })
   }
 

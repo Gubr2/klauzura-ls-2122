@@ -116,11 +116,11 @@ body {
 }
 
 .ui__intro__title {
-  color: #25261e;
+  color: #fff;
   gap: .528571rem;
   font-family: work_sansregular;
   font-size: 3.7rem;
-  display: flex;
+  display: none;
 }
 
 .ui__intro__title span {
@@ -137,75 +137,33 @@ body {
   justify-content: center;
   align-items: center;
   margin-bottom: 8rem;
-  display: flex;
+  display: none;
 }
 
 .ui__intro__symbol--line {
   width: .2rem;
   height: 6.9rem;
-  background-color: #25261e;
+  background-color: #fff;
 }
 
 .ui__intro__symbol--circle {
   width: 1.2rem;
   height: 1.2rem;
-  background-color: #25261e;
+  background-color: #fff;
   border-radius: 50%;
   margin-top: -5.5rem;
 }
 
 .ui__intro--btn {
-  width: 30rem;
-  height: 10rem;
-  margin-top: 5rem;
-  position: relative;
-}
-
-.ui__intro--btn .--background {
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  background: radial-gradient(50% 50%, #25261e 0%, #25261e00 100%);
-  transition: all 1s ease-in-out;
-  animation: scale 10s infinite;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-}
-
-.ui__intro--btn .--background:nth-child(1) {
-  opacity: 1;
-}
-
-.ui__intro--btn .--background:nth-child(2) {
-  opacity: 0;
-  background: radial-gradient(50% 50%, #25261e 25%, #25261e00 100%);
-}
-
-.ui__intro--btn span {
   color: #fff;
-  z-index: 2;
-  pointer-events: none;
+  cursor: pointer;
+  visibility: hidden;
+  border: 0 solid #fff;
+  border-width: 0 1px;
+  margin-top: 10rem;
+  padding: 1rem 4rem;
   font-family: work_sansregular;
   font-size: 1.8rem;
-  transition: all .5s ease-in-out;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.ui__intro--btn:hover {
-  transform: scale(1.05)rotate(1deg);
-}
-
-.ui__intro--btn:hover .--background:nth-child(2) {
-  opacity: 1;
-}
-
-.ui__intro--btn:hover span {
-  opacity: .75;
-  transform: translate(-50%, -50%)rotate(-1deg);
 }
 
 .ui__top {
@@ -223,7 +181,7 @@ body {
 }
 
 .ui__top span {
-  color: #25261e;
+  color: #fff;
   cursor: pointer;
   font-family: work_sansmedium;
   font-size: 1.4rem;
@@ -247,7 +205,7 @@ body {
 }
 
 .ui__bottom span {
-  color: #25261e;
+  color: #fff;
   cursor: pointer;
 }
 
@@ -298,6 +256,128 @@ body {
   100% {
     transform: translateX(-3rem)rotate(-5deg);
   }
+}
+
+.ui__read {
+  z-index: 999;
+  display: none;
+  position: absolute;
+  bottom: 12rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ui__read--btn {
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  border: 0 solid #fff;
+  border-width: 0 1px;
+  padding: 1rem 4rem;
+  font-family: work_sansregular;
+  font-size: 1.8rem;
+}
+
+.ui__read--continue {
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  cursor: pointer;
+  box-sizing: border-box;
+  opacity: 0;
+  margin-top: 6rem;
+  padding: 1rem;
+  font-family: work_sansmedium;
+  font-size: 1.4rem;
+}
+
+.ui__read--continue:hover {
+  opacity: .75 !important;
+}
+
+.ui__story--container {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0 29rem;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-y: scroll;
+}
+
+.ui__story {
+  z-index: 99;
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+}
+
+.ui__story--number {
+  opacity: .5;
+  align-self: baseline;
+  margin-top: 24rem;
+  font-family: work_sansregular;
+  font-size: 1.8rem;
+}
+
+.ui__story--title {
+  width: 50%;
+  align-self: baseline;
+  margin-top: 3rem;
+  font-family: attack_typeregular;
+  font-size: 6rem;
+}
+
+.ui__story--title span span {
+  opacity: 0;
+  display: inline-block;
+}
+
+.ui__story--body {
+  width: 50%;
+  margin-top: 10rem;
+  margin-left: 50%;
+  font-family: work_sansregular;
+  font-size: 1.4rem;
+  line-height: 2.5rem;
+}
+
+.ui__story--btn {
+  color: #25261e;
+  cursor: pointer;
+  border: 0 solid #25261e;
+  border-width: 0 1px;
+  margin-bottom: 15rem;
+  padding: 1rem 4rem;
+  font-family: work_sansregular;
+  font-size: 1.8rem;
+  margin-top: 15rem !important;
+}
+
+.ui__sidebar {
+  width: .2rem;
+  height: 16rem;
+  flex-direction: column;
+  display: flex;
+  position: absolute;
+  top: 50%;
+  left: 3rem;
+  transform: translateY(-50%)rotate(180deg);
+}
+
+.ui__sidebar--item {
+  width: 100%;
+  height: 100%;
+  opacity: .25;
+  background-color: #fff;
+  transition: all .75s;
+  display: block;
+}
+
+[data-reveal="ui"] {
+  opacity: 0;
 }
 
 .webgl {

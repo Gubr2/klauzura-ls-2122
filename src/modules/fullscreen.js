@@ -20,7 +20,7 @@ export default class Fullscreen {
   /* View in fullscreen */
   openFullscreen() {
     this.buttonFlag = false
-    this.button.style.visibility = 'hidden'
+    // this.button.style.visibility = 'hidden'
 
     if (this.elem.requestFullscreen) {
       this.elem.requestFullscreen()

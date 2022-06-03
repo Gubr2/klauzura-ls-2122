@@ -7,6 +7,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
+import TextSeparate from './separate'
 
 import Texts from './texts'
 import UI from './ui'
@@ -22,6 +23,7 @@ export default class WebGL {
 
     this.texts = new Texts()
     this.ui = new UI()
+    this.textSeparate = new TextSeparate()
 
     //
     // SETTINGS
@@ -29,7 +31,7 @@ export default class WebGL {
 
     // ---> Global
     this.globalSpeed = {
-      value: 0,
+      value: 0, // 0.0035
     } // 0.0035
 
     // ---> Houses
@@ -37,10 +39,12 @@ export default class WebGL {
     this.hCount = 8 // 4
     this.vCount = 8 // 8
 
+    this.moveDist
+
     this.target = new THREE.Vector3()
 
     // ---> Fog
-    this.fogColor = 0xf5eedf
+    this.fogColor = 0xb5ae9f // 0xf5eedf
 
     // ---> Light Object
     this.lightObjectY = 0.2
@@ -73,7 +77,7 @@ export default class WebGL {
     // ---> Camera
     this.introValues = {
       height: 2,
-      time: 4.5,
+      time: 10,
       fog: {
         near: 4,
         far: 9,
@@ -114,7 +118,7 @@ export default class WebGL {
     this.camera.position.x = 0
     this.camera.position.z = 4
     this.camera.position.y = 1.5
-    this.camera.fov = 70
+    this.camera.fov = 50
 
     this.renderer = new THREE.WebGLRenderer({
       // alpha: true,
@@ -126,7 +130,6 @@ export default class WebGL {
     // this.renderer.toneMapping = THREE.ReinhardToneMapping
 
     this.container.appendChild(this.renderer.domElement)
-
     // Controls
 
     // this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -158,6 +161,7 @@ export default class WebGL {
     this.objectsFlag = []
     this.objectsBlock = false
     this.hoveringFlag = false
+    this.startFlag = false
 
     // Empty Variables
     this.lightSource
@@ -180,10 +184,17 @@ export default class WebGL {
     })
 
     // Buttons
-    this.resetBtn = document.querySelector('.reset-btn')
+    this.resetBtn = document.querySelector('.ui__read--continue')
     this.introBtn = document.querySelector('.ui__intro--btn')
-    this.readBtn = document.querySelector('.read-btn')
-    this.readBtnClose = document.querySelector('.read-btn--close')
+    this.readBtn = document.querySelector('.ui__read--btn')
+    this.readBtnClose = document.querySelector('.ui__story--btn')
+
+    // Texts
+    this.storyTitle = document.querySelector('.ui__story--title')
+
+    // Sidebar
+    this.sidebar = document.querySelector('.ui__sidebar')
+    this.sidebarItems
 
     // Functions
     this.resize()
@@ -196,6 +207,8 @@ export default class WebGL {
     this.introHandler()
     this.readHandler()
     this.readCloseHandler()
+
+    this.addSidebar()
   }
 
   setupResize() {
@@ -235,42 +248,10 @@ export default class WebGL {
   //
 
   introHandler() {
-    this.introBtn.addEventListener('click', this.intro.bind(this))
+    this.introBtn.addEventListener('click', this.enter.bind(this))
   }
 
   intro() {
-    // Lightobject
-
-    gsap.fromTo(
-      this.lightObject.position,
-      {
-        y: 3,
-      },
-      {
-        y: this.lightObjectY,
-        duration: 3,
-        ease: this.introValues.ease,
-        onComplete: () => {
-          this.lightObject.position.y = 0.2
-        },
-      }
-    )
-
-    gsap.fromTo(
-      this.lightSource.position,
-      {
-        y: 3,
-      },
-      {
-        y: this.lightObjectY,
-        duration: 3,
-        ease: this.introValues.ease,
-        onComplete: () => {
-          this.lightSource.position.y = 0.2
-        },
-      }
-    )
-
     // Rest
 
     gsap.to('.white__cover', {
@@ -337,29 +318,93 @@ export default class WebGL {
     })
 
     gsap.to(this.video, {
-      autoAlpha: 0.75,
+      autoAlpha: 0.5,
       delay: this.introValues.time / 1.5,
       duration: this.introValues.time / 2,
     })
 
     setTimeout(() => {
       this.videoTransition.play()
-    }, 750)
+    }, (this.introValues.time * 1000) / 2)
 
     setTimeout(() => {
       this.ui.introText().then(() => {
-        this.mouseFlag = true
+        this.ui.introAnimations()
+        this.ui.reveal()
       })
-    }, 4000)
+    }, (this.introValues.time * 1000) / 1.75)
 
     //
 
-    this.ui.introHide()
-    this.ui.recolorIcons()
+    // this.ui.introHide()
+    // this.ui.recolorIcons()
   }
+
+  enter() {
+    gsap.fromTo(
+      this.lightObject.position,
+      {
+        y: 3,
+      },
+      {
+        y: this.lightObjectY,
+        duration: 3,
+        ease: this.introValues.ease,
+        onComplete: () => {
+          this.lightObject.position.y = 0.2
+        },
+      }
+    )
+    gsap.fromTo(
+      this.lightSource.position,
+      {
+        y: 3,
+      },
+      {
+        y: this.lightObjectY,
+        duration: 3,
+        ease: this.introValues.ease,
+        onComplete: () => {
+          this.lightSource.position.y = 0.2
+        },
+      }
+    )
+
+    gsap.fromTo(
+      this.group_particles.position,
+      {
+        y: 3,
+      },
+      {
+        y: this.lightObjectY,
+        duration: 3,
+        ease: this.introValues.ease,
+        onComplete: () => {
+          this.lightSource.position.y = 0.2
+        },
+      }
+    )
+
+    this.ui.introHide()
+    this.ui.mouseText().then(() => {
+      this.mouseFlag = true
+      this.startFlag = true
+
+      this.group_hover.position.z = -0.2 - this.vDist * (this.texts.collection.length / 2) + this.moveDist // (this.vDist - this.moveDist) * 2.5
+    })
+  }
+
   //
   // OBJECTS
   //
+
+  addSidebar() {
+    this.texts.collection.forEach((item) => {
+      this.sidebar.insertAdjacentHTML('beforeend', '<div class="ui__sidebar--item"></div>')
+    })
+
+    this.sidebarItems = [...document.querySelectorAll('.ui__sidebar--item')]
+  }
 
   addHouses() {
     return new Promise((resolve) => {
@@ -429,7 +474,7 @@ export default class WebGL {
       // })
 
       // LIGHTS
-      this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
+      this.light = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.5)
       this.scene.add(this.light)
 
       // AFTER LOAD
@@ -458,8 +503,8 @@ export default class WebGL {
         })
       )
 
-      this.lightObject.position.y = 2
-      this.lightSource.position.y = 2
+      this.lightObject.position.y = 5
+      this.lightSource.position.y = 5
 
       this.scene.add(this.lightSource)
       this.scene.add(this.lightObject)
@@ -473,7 +518,7 @@ export default class WebGL {
       this.group_particles = new THREE.Group()
       this.group_particles.name = 'group_paricles'
 
-      this.group_particles.position.y = this.lightObjectY
+      this.group_particles.position.y = 5
 
       this.scene.add(this.group_particles)
 
@@ -587,7 +632,7 @@ export default class WebGL {
       this.group_hover = new THREE.Group()
       this.group_hover.name = 'group_hover'
 
-      this.group_hover.position.z = -this.vDist * 6
+      this.group_hover.position.z = -this.vDist * 2
 
       this.scene.add(this.group_hover)
 
@@ -649,9 +694,9 @@ export default class WebGL {
       this.addHoverObjects(),
       this.makeObjectsActive(),
     ]).then(() => {
-      console.log('resolved')
       this.loadedForAnimation = true
       this.loadingCover()
+      this.intro()
     })
   }
 
@@ -784,6 +829,18 @@ export default class WebGL {
   }
 
   //
+  // CENTER CALCULATION
+  //
+
+  centerCalc() {
+    this.group_hover.children.forEach((hoverObject, index) => {
+      if (hoverObject.getWorldPosition(this.target).z < this.vDist && hoverObject.getWorldPosition(this.target).z > 0) {
+        this.moveDist = hoverObject.getWorldPosition(this.target).z
+      }
+    })
+  }
+
+  //
   // HOVER ANIMATIONS
   //
 
@@ -805,6 +862,16 @@ export default class WebGL {
       duration: 4,
       ease: 'power3',
     })
+
+    // ---> Sidebar
+    this.objectIndex = (index + 1) / this.hoverObjectCount - 1
+
+    if (Number.isInteger(this.objectIndex)) {
+      this.sidebarItems[this.objectIndex].style.opacity = '1'
+    }
+
+    this.ui.read()
+
     this.camera.updateProjectionMatrix()
 
     // ---> Light
@@ -824,7 +891,6 @@ export default class WebGL {
       duration: 2,
       ease: 'power2',
       onComplete: () => {
-        // console.log('stopped')
         this.objectsFlag[index] = false
         this.objectsBlock = true
       },
@@ -917,14 +983,23 @@ export default class WebGL {
     })
 
     gsap.to('.white__cover', {
-      autoAlpha: 0.25,
-      duration: this.introValues.time,
+      autoAlpha: 0.75,
+      duration: this.introValues.time / 2,
       ease: this.introValues.ease,
     })
 
     setTimeout(() => {
       this.videoTransition.play()
     }, 500)
+
+    this.ui.hideRead()
+
+    this.storyTitle.innerHTML = 'Being ill meant a certain death'
+    this.textSeparate.separate('[data-read]').then(() => {
+      setTimeout(() => {
+        this.ui.revealStory()
+      }, 1500)
+    })
   }
 
   readCloseHandler() {
@@ -942,7 +1017,7 @@ export default class WebGL {
     })
 
     gsap.to(this.video, {
-      autoAlpha: 0.75,
+      autoAlpha: 0.5,
       duration: 2,
       ease: this.introValues.ease,
       onUpdate: () => {
@@ -952,7 +1027,7 @@ export default class WebGL {
 
     gsap.to('.white__cover', {
       autoAlpha: 0,
-      duration: this.introValues.time,
+      duration: this.introValues.time / 4,
       ease: this.introValues.ease,
     })
 
@@ -963,6 +1038,8 @@ export default class WebGL {
     setTimeout(() => {
       this.reset()
     }, 1000)
+
+    this.ui.hideStory()
   }
 
   //
@@ -1025,6 +1102,8 @@ export default class WebGL {
       opacity: 0,
       duration: 0.5,
     })
+
+    this.ui.hideRead()
   }
 
   //
@@ -1040,7 +1119,7 @@ export default class WebGL {
     this.group_houses.position.z += this.globalSpeed.value
     this.group_hover.position.z += this.globalSpeed.value
 
-    console.log(this.hoveringFlag)
+    this.centerCalc()
 
     if (!this.hoveringFlag) {
       gsap.to(this.textMesh.material, {
@@ -1053,7 +1132,9 @@ export default class WebGL {
       this.refreshHousePosition()
 
       // ---> Hover Object & Particles
-      this.hoverOnObjects()
+      if (this.startFlag) {
+        this.hoverOnObjects()
+      }
 
       // ---> Move Hover Particles
 

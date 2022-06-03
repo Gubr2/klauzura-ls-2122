@@ -552,6 +552,8 @@ var _renderPassJs = require("three/examples/jsm/postprocessing/RenderPass.js");
 var _unrealBloomPassJs = require("three/examples/jsm/postprocessing/UnrealBloomPass.js");
 var _fontLoaderJs = require("three/examples/jsm/loaders/FontLoader.js");
 var _textGeometryJs = require("three/examples/jsm/geometries/TextGeometry.js");
+var _separate = require("./separate");
+var _separateDefault = parcelHelpers.interopDefault(_separate);
 var _texts = require("./texts");
 var _textsDefault = parcelHelpers.interopDefault(_texts);
 var _ui = require("./ui");
@@ -567,6 +569,7 @@ class WebGL {
         //
         this.texts = new _textsDefault.default();
         this.ui = new _uiDefault.default();
+        this.textSeparate = new _separateDefault.default();
         //
         // SETTINGS
         //
@@ -581,9 +584,11 @@ class WebGL {
         ;
         this.vCount = 8 // 8
         ;
+        this.moveDist;
         this.target = new _three.Vector3();
         // ---> Fog
-        this.fogColor = 0xf5eedf;
+        this.fogColor = 0xb5ae9f // 0xf5eedf
+        ;
         // ---> Light Object
         this.lightObjectY = 0.2;
         this.lightObjectGrow = 0.025;
@@ -610,7 +615,7 @@ class WebGL {
         // ---> Camera
         this.introValues = {
             height: 2,
-            time: 4.5,
+            time: 10,
             fog: {
                 near: 4,
                 far: 9
@@ -643,7 +648,7 @@ class WebGL {
         this.camera.position.x = 0;
         this.camera.position.z = 4;
         this.camera.position.y = 1.5;
-        this.camera.fov = 70;
+        this.camera.fov = 50;
         this.renderer = new _three.WebGLRenderer({
             // alpha: true,
             antialias: true
@@ -675,6 +680,7 @@ class WebGL {
         this.objectsFlag = [];
         this.objectsBlock = false;
         this.hoveringFlag = false;
+        this.startFlag = false;
         // Empty Variables
         this.lightSource;
         this.lightObject;
@@ -692,10 +698,15 @@ class WebGL {
             console.log('Craftwork Loaded');
         });
         // Buttons
-        this.resetBtn = document.querySelector('.reset-btn');
+        this.resetBtn = document.querySelector('.ui__read--continue');
         this.introBtn = document.querySelector('.ui__intro--btn');
-        this.readBtn = document.querySelector('.read-btn');
-        this.readBtnClose = document.querySelector('.read-btn--close');
+        this.readBtn = document.querySelector('.ui__read--btn');
+        this.readBtnClose = document.querySelector('.ui__story--btn');
+        // Texts
+        this.storyTitle = document.querySelector('.ui__story--title');
+        // Sidebar
+        this.sidebar = document.querySelector('.ui__sidebar');
+        this.sidebarItems;
         // Functions
         this.resize();
         this.setupResize();
@@ -706,6 +717,7 @@ class WebGL {
         this.introHandler();
         this.readHandler();
         this.readCloseHandler();
+        this.addSidebar();
     }
     setupResize() {
         window.addEventListener('resize', this.resize.bind(this));
@@ -737,30 +749,9 @@ class WebGL {
     // INTRO ANIMATION
     //
     introHandler() {
-        this.introBtn.addEventListener('click', this.intro.bind(this));
+        this.introBtn.addEventListener('click', this.enter.bind(this));
     }
     intro() {
-        // Lightobject
-        _gsapDefault.default.fromTo(this.lightObject.position, {
-            y: 3
-        }, {
-            y: this.lightObjectY,
-            duration: 3,
-            ease: this.introValues.ease,
-            onComplete: ()=>{
-                this.lightObject.position.y = 0.2;
-            }
-        });
-        _gsapDefault.default.fromTo(this.lightSource.position, {
-            y: 3
-        }, {
-            y: this.lightObjectY,
-            duration: 3,
-            ease: this.introValues.ease,
-            onComplete: ()=>{
-                this.lightSource.position.y = 0.2;
-            }
-        });
         // Rest
         _gsapDefault.default.to('.white__cover', {
             autoAlpha: 0,
@@ -819,25 +810,73 @@ class WebGL {
             }
         });
         _gsapDefault.default.to(this.video, {
-            autoAlpha: 0.75,
+            autoAlpha: 0.5,
             delay: this.introValues.time / 1.5,
             duration: this.introValues.time / 2
         });
         setTimeout(()=>{
             this.videoTransition.play();
-        }, 750);
+        }, this.introValues.time * 1000 / 2);
         setTimeout(()=>{
             this.ui.introText().then(()=>{
-                this.mouseFlag = true;
+                this.ui.introAnimations();
+                this.ui.reveal();
             });
-        }, 4000);
-        //
+        }, this.introValues.time * 1000 / 1.75);
+    //
+    // this.ui.introHide()
+    // this.ui.recolorIcons()
+    }
+    enter() {
+        _gsapDefault.default.fromTo(this.lightObject.position, {
+            y: 3
+        }, {
+            y: this.lightObjectY,
+            duration: 3,
+            ease: this.introValues.ease,
+            onComplete: ()=>{
+                this.lightObject.position.y = 0.2;
+            }
+        });
+        _gsapDefault.default.fromTo(this.lightSource.position, {
+            y: 3
+        }, {
+            y: this.lightObjectY,
+            duration: 3,
+            ease: this.introValues.ease,
+            onComplete: ()=>{
+                this.lightSource.position.y = 0.2;
+            }
+        });
+        _gsapDefault.default.fromTo(this.group_particles.position, {
+            y: 3
+        }, {
+            y: this.lightObjectY,
+            duration: 3,
+            ease: this.introValues.ease,
+            onComplete: ()=>{
+                this.lightSource.position.y = 0.2;
+            }
+        });
         this.ui.introHide();
-        this.ui.recolorIcons();
+        this.ui.mouseText().then(()=>{
+            this.mouseFlag = true;
+            this.startFlag = true;
+            this.group_hover.position.z = -0.2 - this.vDist * (this.texts.collection.length / 2) + this.moveDist // (this.vDist - this.moveDist) * 2.5
+            ;
+        });
     }
     //
     // OBJECTS
     //
+    addSidebar() {
+        this.texts.collection.forEach((item)=>{
+            this.sidebar.insertAdjacentHTML('beforeend', '<div class="ui__sidebar--item"></div>');
+        });
+        this.sidebarItems = [
+            ...document.querySelectorAll('.ui__sidebar--item')
+        ];
+    }
     addHouses() {
         return new Promise((resolve)=>{
             // GROUPS
@@ -887,7 +926,7 @@ class WebGL {
             //   })
             // })
             // LIGHTS
-            this.light = new _three.HemisphereLight(0xffffff, 0xffffff, 1);
+            this.light = new _three.HemisphereLight(0xffffff, 0xffffff, 0.5);
             this.scene.add(this.light);
             // AFTER LOAD
             this.manager.onLoad = ()=>{
@@ -907,8 +946,8 @@ class WebGL {
                 emissive: 0xffffff,
                 emissiveIntensity: 1
             }));
-            this.lightObject.position.y = 2;
-            this.lightSource.position.y = 2;
+            this.lightObject.position.y = 5;
+            this.lightSource.position.y = 5;
             this.scene.add(this.lightSource);
             this.scene.add(this.lightObject);
             resolve();
@@ -918,7 +957,7 @@ class WebGL {
         return new Promise((resolve)=>{
             this.group_particles = new _three.Group();
             this.group_particles.name = 'group_paricles';
-            this.group_particles.position.y = this.lightObjectY;
+            this.group_particles.position.y = 5;
             this.scene.add(this.group_particles);
             for(let i = 0; i < this.particlesCount; i++){
                 this.particle = new _three.Mesh(new _three.BoxGeometry(this.particlesSize, this.particlesSize, this.particlesSize), new _three.MeshBasicMaterial({
@@ -1014,7 +1053,7 @@ class WebGL {
         return new Promise((resolve)=>{
             this.group_hover = new _three.Group();
             this.group_hover.name = 'group_hover';
-            this.group_hover.position.z = -this.vDist * 6;
+            this.group_hover.position.z = -this.vDist * 2;
             this.scene.add(this.group_hover);
             for(let i = 0; i < this.hoverCount; i++){
                 // ---> Hover Object
@@ -1080,9 +1119,9 @@ class WebGL {
             this.addHoverObjects(),
             this.makeObjectsActive(), 
         ]).then(()=>{
-            console.log('resolved');
             this.loadedForAnimation = true;
             this.loadingCover();
+            this.intro();
         });
     }
     //
@@ -1159,6 +1198,14 @@ class WebGL {
         });
     }
     //
+    // CENTER CALCULATION
+    //
+    centerCalc() {
+        this.group_hover.children.forEach((hoverObject, index)=>{
+            if (hoverObject.getWorldPosition(this.target).z < this.vDist && hoverObject.getWorldPosition(this.target).z > 0) this.moveDist = hoverObject.getWorldPosition(this.target).z;
+        });
+    }
+    //
     // HOVER ANIMATIONS
     //
     hoverAnimations(hoverObject, index1) {
@@ -1177,6 +1224,10 @@ class WebGL {
             duration: 4,
             ease: 'power3'
         });
+        // ---> Sidebar
+        this.objectIndex = (index1 + 1) / this.hoverObjectCount - 1;
+        if (Number.isInteger(this.objectIndex)) this.sidebarItems[this.objectIndex].style.opacity = '1';
+        this.ui.read();
         this.camera.updateProjectionMatrix();
         // ---> Light
         this.hDistance = this.lightObject.position.x - hoverObject.getWorldPosition(this.target).x;
@@ -1192,7 +1243,6 @@ class WebGL {
             duration: 2,
             ease: 'power2',
             onComplete: ()=>{
-                // console.log('stopped')
                 this.objectsFlag[index1] = false;
                 this.objectsBlock = true;
             }
@@ -1268,13 +1318,20 @@ class WebGL {
             }
         });
         _gsapDefault.default.to('.white__cover', {
-            autoAlpha: 0.25,
-            duration: this.introValues.time,
+            autoAlpha: 0.75,
+            duration: this.introValues.time / 2,
             ease: this.introValues.ease
         });
         setTimeout(()=>{
             this.videoTransition.play();
         }, 500);
+        this.ui.hideRead();
+        this.storyTitle.innerHTML = 'Being ill meant a certain death';
+        this.textSeparate.separate('[data-read]').then(()=>{
+            setTimeout(()=>{
+                this.ui.revealStory();
+            }, 1500);
+        });
     }
     readCloseHandler() {
         this.readBtnClose.addEventListener('click', this.readClose.bind(this));
@@ -1289,7 +1346,7 @@ class WebGL {
             }
         });
         _gsapDefault.default.to(this.video, {
-            autoAlpha: 0.75,
+            autoAlpha: 0.5,
             duration: 2,
             ease: this.introValues.ease,
             onUpdate: ()=>{
@@ -1298,7 +1355,7 @@ class WebGL {
         });
         _gsapDefault.default.to('.white__cover', {
             autoAlpha: 0,
-            duration: this.introValues.time,
+            duration: this.introValues.time / 4,
             ease: this.introValues.ease
         });
         setTimeout(()=>{
@@ -1307,6 +1364,7 @@ class WebGL {
         setTimeout(()=>{
             this.reset();
         }, 1000);
+        this.ui.hideStory();
     }
     //
     // RESET
@@ -1355,6 +1413,7 @@ class WebGL {
             opacity: 0,
             duration: 0.5
         });
+        this.ui.hideRead();
     }
     //
     // RENDER
@@ -1365,7 +1424,7 @@ class WebGL {
         window.requestAnimationFrame(this.render.bind(this));
         this.group_houses.position.z += this.globalSpeed.value;
         this.group_hover.position.z += this.globalSpeed.value;
-        console.log(this.hoveringFlag);
+        this.centerCalc();
         if (!this.hoveringFlag) _gsapDefault.default.to(this.textMesh.material, {
             opacity: 0,
             duration: 0.5
@@ -1373,7 +1432,7 @@ class WebGL {
         if (this.loadedForAnimation) {
             this.refreshHousePosition();
             // ---> Hover Object & Particles
-            this.hoverOnObjects();
+            if (this.startFlag) this.hoverOnObjects();
             // ---> Move Hover Particles
             this.mouseXConverted = (this.mouseX - 0.5) * 1.5;
             this.lightSource.position.y += Math.sin(this.time) * 0.0015;
@@ -1394,7 +1453,7 @@ class WebGL {
 }
 exports.default = WebGL;
 
-},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE","three/examples/jsm/loaders/FontLoader.js":"h0CPK","three/examples/jsm/geometries/TextGeometry.js":"d5vi9","./texts":"cXbSw","./ui":"lFOPJ"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","three/examples/jsm/loaders/GLTFLoader":"dVRsF","three/examples/jsm/loaders/DRACOLoader":"lkdU4","three/examples/jsm/controls/OrbitControls.js":"7mqRv","stats.js":"9lwC6","gsap":"fPSuC","three/examples/jsm/postprocessing/EffectComposer.js":"e5jie","three/examples/jsm/postprocessing/RenderPass.js":"hXnUO","three/examples/jsm/postprocessing/UnrealBloomPass.js":"3iDYE","three/examples/jsm/loaders/FontLoader.js":"h0CPK","three/examples/jsm/geometries/TextGeometry.js":"d5vi9","./texts":"cXbSw","./ui":"lFOPJ","./separate":"f3Ntu"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping
@@ -39462,9 +39521,11 @@ var _gsap = require("gsap");
 var _gsapDefault = parcelHelpers.interopDefault(_gsap);
 class UI {
     constructor(){
-        this.introAnimations();
-        this.reveal();
+        this.storyContainer = document.querySelector('.ui__story--container');
     }
+    //
+    // INTRO
+    //
     introAnimations() {
         _gsapDefault.default.fromTo('.ui__intro__title span', {
             autoAlpha: 0.25,
@@ -39479,6 +39540,9 @@ class UI {
                 from: 'center',
                 amount: 0.5,
                 axis: 'x'
+            },
+            onStart: ()=>{
+                document.querySelector('.ui__intro__title').style.display = 'flex';
             }
         });
         _gsapDefault.default.fromTo('.ui__intro--btn', {
@@ -39504,7 +39568,10 @@ class UI {
             duration: 1,
             delay: 0.5,
             ease: 'expo.out',
-            transformOrigin: 'top'
+            transformOrigin: 'top',
+            onStart: ()=>{
+                document.querySelector('.ui__intro__symbol').style.display = 'flex';
+            }
         });
         _gsapDefault.default.fromTo('.ui__intro__symbol--circle', {
             y: '-200%'
@@ -39526,6 +39593,9 @@ class UI {
             transformOrigin: 'top'
         });
     }
+    //
+    // REVEAL
+    //
     reveal() {
         _gsapDefault.default.fromTo('[data-reveal="ui"]', {
             autoAlpha: 0,
@@ -39543,6 +39613,9 @@ class UI {
             }
         });
     }
+    //
+    // INTRO HIDE
+    //
     introHide() {
         _gsapDefault.default.to('.ui__intro__title span', {
             duration: 2,
@@ -39567,13 +39640,10 @@ class UI {
             autoAlpha: 0,
             scale: 0.8
         });
-        _gsapDefault.default.to('.ui__top [data-reveal="ui"]', {
-            autoAlpha: 0,
-            stagger: 0.5,
-            duration: 1,
-            ease: 'power3.out'
-        });
     }
+    //
+    // RECOLOR ICONS
+    //
     recolorIcons() {
         _gsapDefault.default.to('[data-reveal="ui"]', {
             color: '#fff',
@@ -39581,6 +39651,9 @@ class UI {
             duration: 1.5
         });
     }
+    //
+    // INTRO TEXT
+    //
     introText() {
         return new Promise((resolve)=>{
             this.tl = _gsapDefault.default.timeline();
@@ -39601,38 +39674,50 @@ class UI {
                 autoAlpha: 0,
                 ease: 'power3.out',
                 duration: 1.5,
-                delay: 1
-            });
-            this.tl.fromTo('.ui__intro__text--2 span span', {
-                autoAlpha: 0,
-                y: 'random(2%, -2%)'
-            }, {
-                duration: 3,
-                ease: 'power3.out',
-                autoAlpha: 1,
-                y: '0%',
-                stagger: {
-                    amount: 0.5,
-                    axis: 'x'
-                }
-            });
-            this.tl.to('.ui__intro__text--2 span span', {
-                autoAlpha: 0,
-                ease: 'power3.out',
-                duration: 1.5,
                 delay: 1,
-                onStart: ()=>{
-                    _gsapDefault.default.to('.ui__intro__text--icon', {
-                        delay: 2,
-                        autoAlpha: 1,
-                        duration: 2
-                    });
+                onComplete: ()=>{
+                    resolve();
                 }
             });
-            this.tl.fromTo('.ui__intro__text--3 span span', {
+        // this.tl.fromTo(
+        //   '.ui__intro__text--2 span span',
+        //   {
+        //     autoAlpha: 0,
+        //     y: 'random(2%, -2%)',
+        //   },
+        //   {
+        //     duration: 3,
+        //     ease: 'power3.out',
+        //     autoAlpha: 1,
+        //     y: '0%',
+        //     stagger: {
+        //       amount: 0.5,
+        //       axis: 'x',
+        //     },
+        //   }
+        // )
+        // this.tl.to('.ui__intro__text--2 span span', {
+        //   autoAlpha: 0,
+        //   ease: 'power3.out',
+        //   duration: 1.5,
+        //   delay: 1,
+        //   onStart: () => {
+        //     gsap.to('.ui__intro__text--icon', {
+        //       delay: 2,
+        //       autoAlpha: 1,
+        //       duration: 2,
+        //     })
+        //   },
+        // })
+        });
+    }
+    mouseText() {
+        return new Promise((resolve)=>{
+            _gsapDefault.default.fromTo('.ui__intro__text--3 span span', {
                 autoAlpha: 0,
                 y: 'random(2%, -2%)'
             }, {
+                delay: 2,
                 duration: 3,
                 ease: 'power3.out',
                 autoAlpha: 1,
@@ -39641,80 +39726,164 @@ class UI {
                     amount: 0.5,
                     axis: 'x'
                 },
-                onComplete: ()=>{
-                    resolve();
-                    document.addEventListener('mousemove', (e)=>{
-                        _gsapDefault.default.to('.ui__intro__text--3 span span', {
-                            autoAlpha: 0,
-                            ease: 'power3.out',
-                            duration: 1.5,
-                            delay: 1
-                        });
-                        _gsapDefault.default.to('.ui__intro__text--icon', {
-                            autoAlpha: 0,
-                            ease: 'power3.out',
-                            duration: 1.5,
-                            delay: 1
-                        });
+                onStart: ()=>{
+                    _gsapDefault.default.to('.ui__intro__text--icon', {
+                        autoAlpha: 1,
+                        duration: 2
                     });
+                    setTimeout(()=>{
+                        resolve();
+                        document.addEventListener('mousemove', (e)=>{
+                            _gsapDefault.default.to('.ui__intro__text--3 span span', {
+                                autoAlpha: 0,
+                                ease: 'power3.out',
+                                duration: 1.5,
+                                delay: 1
+                            });
+                            _gsapDefault.default.to('.ui__intro__text--icon', {
+                                autoAlpha: 0,
+                                ease: 'power3.out',
+                                duration: 1.5,
+                                delay: 1
+                            });
+                        });
+                    }, 2000);
                 }
             });
+        });
+    }
+    //
+    // READ
+    //
+    read() {
+        document.querySelector('.ui__read').style.display = 'block';
+        _gsapDefault.default.to('.ui__read--btn', {
+            autoAlpha: 1,
+            duration: 2,
+            onComplete: ()=>{
+                document.querySelector('.ui__read--btn').style.transition = '1s ease-in-out';
+            }
+        });
+        _gsapDefault.default.to('.ui__read--continue', {
+            autoAlpha: 1,
+            delay: 0.25,
+            duration: 2,
+            onComplete: ()=>{
+                document.querySelector('.ui__read--continue').style.transition = '1s ease-in-out';
+            }
+        });
+    }
+    hideRead() {
+        _gsapDefault.default.to('.ui__read--btn', {
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: 'power3.out',
+            onStart: ()=>{
+                document.querySelector('.ui__read--btn').style.transition = 'inherit';
+            }
+        });
+        _gsapDefault.default.to('.ui__read--continue', {
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: 'power3.out',
+            onStart: ()=>{
+                document.querySelector('.ui__read--continue').style.transition = 'inherit';
+            },
+            onComplete: ()=>{
+                document.querySelector('.ui__read').style.display = 'none';
+            }
+        });
+        _gsapDefault.default.to('.ui__top [data-reveal="ui"]', {
+            autoAlpha: 1,
+            stagger: 0.5,
+            duration: 1,
+            ease: 'power3.out'
+        });
+    }
+    // STORY
+    revealStory() {
+        this.storyContainer.style.display = 'block';
+        this.storyContainer.style.visibility = 'visible';
+        this.storyContainer.style.opacity = '1';
+        this.storyContainer.scrollTo(0, 0);
+        _gsapDefault.default.fromTo('.ui__story--title span', {
+            autoAlpha: 0
+        }, {
+            delay: 0.25,
+            duration: 3,
+            ease: 'power3.out',
+            autoAlpha: 1,
+            stagger: 0.025
+        });
+        _gsapDefault.default.fromTo('.ui__story--number', {
+            autoAlpha: 0
+        }, {
+            duration: 3,
+            delay: 0.5,
+            ease: 'power3.out',
+            autoAlpha: 0.5
+        });
+        _gsapDefault.default.fromTo('.ui__story--body', {
+            autoAlpha: 0
+        }, {
+            duration: 3,
+            delay: 0.75,
+            ease: 'power3.out',
+            autoAlpha: 1
+        });
+        _gsapDefault.default.fromTo('.ui__story--btn', {
+            autoAlpha: 0
+        }, {
+            duration: 3,
+            delay: 1,
+            ease: 'power3.out',
+            autoAlpha: 1,
+            onComplete: ()=>{
+                document.querySelector('.ui__story--btn').style.transition = '1s ease-in-out';
+            }
+        });
+        _gsapDefault.default.to('.ui__top [data-reveal="ui"]', {
+            autoAlpha: 0,
+            stagger: 0.5,
+            duration: 1,
+            ease: 'power3.out'
+        });
+    }
+    hideStory() {
+        _gsapDefault.default.to('.ui__story--container', {
+            autoAlpha: 0,
+            duration: 1.5,
+            ease: 'power3.out',
+            onComplete: ()=>{
+                document.querySelector('.ui__story--btn').style.transition = 'inherit';
+            }
         });
     }
 }
 exports.default = UI;
 
-},{"gsap":"fPSuC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2hA5I":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-class Fullscreen {
-    constructor(){
-        this.elem = document.documentElement;
-        this.button = document.querySelector('.ui__bottom__fullscreen--btn');
-        this.buttonFlag = true;
-        this.buttonHandler();
-    }
-    buttonHandler() {
-        this.button.addEventListener('click', ()=>{
-            if (this.buttonFlag) this.openFullscreen();
-            else this.closeFullscreen();
-        });
-    }
-    /* View in fullscreen */ openFullscreen() {
-        this.buttonFlag = false;
-        this.button.style.visibility = 'hidden';
-        if (this.elem.requestFullscreen) this.elem.requestFullscreen();
-        else if (this.elem.webkitRequestFullscreen) /* Safari */ this.elem.webkitRequestFullscreen();
-        else if (this.elem.msRequestFullscreen) /* IE11 */ this.elem.msRequestFullscreen();
-    }
-    /* Close fullscreen */ closeFullscreen() {
-        this.buttonFlag = true;
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) /* Safari */ document.webkitExitFullscreen();
-        else if (document.msExitFullscreen) /* IE11 */ document.msExitFullscreen();
-    }
-}
-exports.default = Fullscreen;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f3Ntu":[function(require,module,exports) {
+},{"gsap":"fPSuC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f3Ntu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class TextSeparate {
     constructor(){}
     separate(selector) {
-        this.text = document.querySelectorAll(selector);
-        this.text.forEach((text)=>{
-            this.toLetter = [];
-            this.joinedLetters = [];
-            this.toWords = text.innerHTML.split(' ');
-            this.toWords.forEach((word, index)=>{
-                this.toLetter[index] = word.split('');
+        return new Promise((resolve)=>{
+            this.text = document.querySelectorAll(selector);
+            this.text.forEach((text)=>{
+                this.toLetter = [];
+                this.joinedLetters = [];
+                this.toWords = text.innerHTML.split(' ');
+                this.toWords.forEach((word, index)=>{
+                    this.toLetter[index] = word.split('');
+                });
+                this.toLetter.forEach((letter, index)=>{
+                    this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>';
+                });
+                this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>';
+                text.innerHTML = this.joinedWords;
+                resolve();
             });
-            this.toLetter.forEach((letter, index)=>{
-                this.joinedLetters[index] = '<span>' + letter.join('</span><span>') + '</span>';
-            });
-            this.joinedWords = '<span>' + this.joinedLetters.join('</span> <span>') + '</span>';
-            text.innerHTML = this.joinedWords;
         });
     }
     separateObject(selector) {
@@ -39746,6 +39915,38 @@ class TextSeparate {
     }
 }
 exports.default = TextSeparate;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2hA5I":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Fullscreen {
+    constructor(){
+        this.elem = document.documentElement;
+        this.button = document.querySelector('.ui__bottom__fullscreen--btn');
+        this.buttonFlag = true;
+        this.buttonHandler();
+    }
+    buttonHandler() {
+        this.button.addEventListener('click', ()=>{
+            if (this.buttonFlag) this.openFullscreen();
+            else this.closeFullscreen();
+        });
+    }
+    /* View in fullscreen */ openFullscreen() {
+        this.buttonFlag = false;
+        // this.button.style.visibility = 'hidden'
+        if (this.elem.requestFullscreen) this.elem.requestFullscreen();
+        else if (this.elem.webkitRequestFullscreen) /* Safari */ this.elem.webkitRequestFullscreen();
+        else if (this.elem.msRequestFullscreen) /* IE11 */ this.elem.msRequestFullscreen();
+    }
+    /* Close fullscreen */ closeFullscreen() {
+        this.buttonFlag = true;
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) /* Safari */ document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) /* IE11 */ document.msExitFullscreen();
+    }
+}
+exports.default = Fullscreen;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["jKwHT","bNKaB"], "bNKaB", "parcelRequire3d27")
 

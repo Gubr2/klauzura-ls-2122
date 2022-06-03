@@ -7,6 +7,8 @@ $white: #fff;
   margin-top: 5rem;
   width: 30rem;
   height: 10rem;
+  // transition: 1s ease-in-out;
+  cursor: pointer;
   .--background {
     width: 100%;
     height: 100%;
@@ -71,4 +73,15 @@ $white: #fff;
   100% {
     transform: translate(-50%, -50%) scaleX(1) scaleY(1) rotate(0deg);
   }
+}
+
+@mixin button_new($color) {
+  font-family: 'work_sansregular';
+  font-size: 1.8rem;
+  color: $color;
+  padding: 1rem 4rem;
+  border-width: 0px 1px;
+  border-style: solid;
+  border-color: $color;
+  cursor: pointer;
 }

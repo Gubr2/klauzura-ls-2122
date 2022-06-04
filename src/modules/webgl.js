@@ -95,7 +95,7 @@ export default class WebGL {
 
     this.stats = new Stats()
     this.stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild(this.stats.dom)
+    // document.body.appendChild(this.stats.dom)
 
     ///////////////////////////////////////////////
 
@@ -162,12 +162,15 @@ export default class WebGL {
     this.objectsBlock = false
     this.hoveringFlag = false
     this.startFlag = false
+    this.slowFlag = []
+    this.speedFlag = true
 
     // Empty Variables
     this.lightSource
     this.lightObject
     this.mouseX
     this.distance
+    this.slowIndex
 
     // Fonts
     this.attacktype = new FontFace('attacktype', 'url(./src/fonts/AttackType-Regular.ttf')
@@ -194,6 +197,8 @@ export default class WebGL {
 
     // Sidebar
     this.sidebar = document.querySelector('.ui__sidebar')
+    this.sidebarProgress = document.querySelector('.ui__sidebar--progress')
+    this.sidebarProgressValueCounter = -100 / this.texts.collection.length / this.vDist
     this.sidebarItems
 
     // Functions
@@ -281,7 +286,7 @@ export default class WebGL {
     })
 
     gsap.to(this.camera, {
-      fov: 20,
+      fov: 22,
       duration: this.introValues.time,
       ease: this.introValues.ease,
       onUpdate: () => {
@@ -385,6 +390,16 @@ export default class WebGL {
       }
     )
 
+    gsap.to(this.camera, {
+      fov: 20,
+      duration: 2,
+      ease: this.introValues.ease,
+      onUpdate: () => {
+        this.camera.updateProjectionMatrix()
+        console.log('updating fov')
+      },
+    })
+
     this.ui.introHide()
     this.ui.mouseText().then(() => {
       this.mouseFlag = true
@@ -392,6 +407,11 @@ export default class WebGL {
 
       this.group_hover.position.z = -0.2 - this.vDist * (this.texts.collection.length / 2) + this.moveDist // (this.vDist - this.moveDist) * 2.5
     })
+
+    this.progressConversion = (100 / this.texts.collection.length / this.vDist / (this.vDist * 100)) * (this.moveDist * 100) - 0.2 * 10
+    this.sidebarProgressValueCounter = -100 / this.texts.collection.length / this.vDist + this.progressConversion
+
+    console.log((100 / this.texts.collection.length / this.vDist / (this.vDist * 100)) * (this.moveDist * 100), this.moveDist)
   }
 
   //
@@ -824,6 +844,40 @@ export default class WebGL {
           opacity: 1,
           duration: 1,
         })
+
+        this.slowIndex = index
+
+        if (this.slowFlag[index]) {
+          if (this.speedFlag) {
+            this.globalSpeed.value = 0.00175
+
+            gsap.to('.ui__read__revealed--btn', {
+              autoAlpha: 1,
+              duration: 1,
+              onStart: () => {
+                document.querySelector('.ui__read__revealed').style.display = 'flex'
+              },
+            })
+          }
+          this.video.playbackRate = 1
+
+          document.body.onkeyup = (e) => {
+            if (e.key == ' ' || e.code == 'Space' || e.keyCode == 32) {
+              this.speedFlag = false
+              this.globalSpeed.value = 0
+              this.read()
+              this.mouseFlag = false
+
+              gsap.to('.ui__read__revealed--btn', {
+                autoAlpha: 0,
+                duration: 1,
+                onStart: () => {
+                  document.querySelector('.ui__read__revealed').style.display = 'none'
+                },
+              })
+            }
+          }
+        }
       }
     })
   }
@@ -1068,6 +1122,11 @@ export default class WebGL {
       ease: 'power3',
     })
 
+    // ---> Slow
+    setTimeout(() => {
+      this.slowFlag[this.slowIndex] = true
+    }, 1000)
+
     // ---> Light
 
     gsap.to(this.lightObject.scale, {
@@ -1104,6 +1163,7 @@ export default class WebGL {
     })
 
     this.ui.hideRead()
+    this.speedFlag = true
   }
 
   //
@@ -1126,6 +1186,17 @@ export default class WebGL {
         opacity: 0,
         duration: 0.5,
       })
+
+      this.globalSpeed.value = 0.0035
+      this.video.playbackRate = 2
+
+      gsap.to('.ui__read__revealed--btn', {
+        autoAlpha: 0,
+        duration: 1,
+        onComplete: () => {
+          document.querySelector('.ui__read__revealed').style.display = 'none'
+        },
+      })
     }
 
     if (this.loadedForAnimation) {
@@ -1134,6 +1205,18 @@ export default class WebGL {
       // ---> Hover Object & Particles
       if (this.startFlag) {
         this.hoverOnObjects()
+
+        // ---> Sidebar
+        if (this.globalSpeed.value) {
+          this.sidebarProgressValue = 100 / this.texts.collection.length / (this.vDist / this.globalSpeed.value)
+          this.sidebarProgressValueCounter += this.sidebarProgressValue
+          if (this.sidebarProgressValueCounter > 100) {
+            this.sidebarProgressValueCounter = 0
+          }
+          this.sidebarProgress.style.top = `${this.sidebarProgressValueCounter}%`
+
+          // console.log(this.sidebarProgressValueCounter)
+        }
       }
 
       // ---> Move Hover Particles

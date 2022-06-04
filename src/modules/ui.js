@@ -183,7 +183,7 @@ export default class UI {
       this.tl.fromTo(
         '.ui__intro__text--1 span span',
         {
-          autoAlpha: 0,
+          autoAlpha: 0.25,
           y: 'random(2%, -2%)',
         },
         {
@@ -279,6 +279,11 @@ export default class UI {
                   ease: 'power3.out',
                   duration: 1.5,
                   delay: 1,
+                })
+                gsap.to('.ui__sidebar', {
+                  duration: 1,
+                  ease: 'power3.out',
+                  autoAlpha: 1,
                 })
               })
             }, 2000)

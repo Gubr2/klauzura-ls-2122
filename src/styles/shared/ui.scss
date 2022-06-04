@@ -82,7 +82,7 @@
     color: $white;
     cursor: pointer;
     &:hover {
-      opacity: 0.75 !important;
+      opacity: 0.5 !important;
     }
   }
 }
@@ -171,6 +171,20 @@
   opacity: 0;
 }
 
+.ui__read__revealed {
+  position: absolute;
+  bottom: 12rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: none;
+}
+
+.ui__read__revealed--btn {
+  @include button_new($white);
+  opacity: 0;
+}
+
 .ui__read--continue {
   font-size: 1.4rem;
   color: $white;
@@ -255,6 +269,7 @@
   height: 16rem;
   display: flex;
   flex-direction: column;
+  opacity: 0;
 }
 
 .ui__sidebar--item {
@@ -265,6 +280,19 @@
   opacity: 0.25;
   transition: 0.75s;
 }
+
+.ui__sidebar--progress {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: $white;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+}
+
+//
 
 [data-reveal='ui'] {
   opacity: 0;

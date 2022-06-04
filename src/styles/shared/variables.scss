@@ -84,4 +84,7 @@ $white: #fff;
   border-style: solid;
   border-color: $color;
   cursor: pointer;
+  &:hover {
+    opacity: 0.5 !important;
+  }
 }

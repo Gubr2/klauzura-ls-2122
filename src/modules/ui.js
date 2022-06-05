@@ -189,20 +189,57 @@ export default class UI {
         {
           duration: 3,
           ease: 'power3.out',
-          autoAlpha: 1,
+          autoAlpha: 0.75,
           y: '0%',
           stagger: {
             amount: 0.5,
             axis: 'x',
+          },
+          onStart: () => {
+            gsap.fromTo(
+              '.ui__intro__text--2 span span',
+              {
+                autoAlpha: 0.25,
+                y: 'random(2%, -2%)',
+              },
+              {
+                duration: 3,
+                ease: 'power3.out',
+                autoAlpha: 1,
+                y: '0%',
+                stagger: {
+                  amount: 0.5,
+                  axis: 'x',
+                },
+              }
+            )
           },
         }
       )
 
       this.tl.to('.ui__intro__text--1 span span', {
         autoAlpha: 0,
+        y: 'random(2%, -2%)',
         ease: 'power3.out',
         duration: 1.5,
         delay: 1,
+        onStart: () => {
+          gsap.to('.ui__intro__text--2 span span', {
+            autoAlpha: 0,
+            y: 'random(2%, -2%)',
+            ease: 'power3.out',
+            duration: 1.5,
+            delay: 0.25,
+            onComplete: () => {
+              resolve()
+            },
+          })
+
+          gsap.to('.lds-ring', {
+            autoAlpha: 0,
+            duration: 1,
+          })
+        },
         onComplete: () => {
           resolve()
         },
@@ -270,6 +307,7 @@ export default class UI {
               document.addEventListener('mousemove', (e) => {
                 gsap.to('.ui__intro__text--3 span span', {
                   autoAlpha: 0,
+                  y: 'random(2%, -2%)',
                   ease: 'power3.out',
                   duration: 1.5,
                   delay: 1,
@@ -361,13 +399,19 @@ export default class UI {
       '.ui__story--title span',
       {
         autoAlpha: 0,
+        y: 'random(2%, -2%)',
       },
       {
-        delay: 0.25,
+        delay: 1.25,
         duration: 3,
+        y: 0,
         ease: 'power3.out',
         autoAlpha: 1,
-        stagger: 0.025,
+        stagger: {
+          from: 'center',
+          amount: 0.75,
+          axis: 'x',
+        },
       }
     )
 
@@ -378,7 +422,7 @@ export default class UI {
       },
       {
         duration: 3,
-        delay: 0.5,
+        delay: 1.5,
         ease: 'power3.out',
         autoAlpha: 0.5,
       }
@@ -391,7 +435,7 @@ export default class UI {
       },
       {
         duration: 3,
-        delay: 0.75,
+        delay: 2,
         ease: 'power3.out',
         autoAlpha: 1,
       }
@@ -404,11 +448,27 @@ export default class UI {
       },
       {
         duration: 3,
-        delay: 1,
+        delay: 3,
         ease: 'power3.out',
         autoAlpha: 1,
         onComplete: () => {
           document.querySelector('.ui__story--btn').style.transition = '1s ease-in-out'
+        },
+      }
+    )
+
+    gsap.fromTo(
+      '.ui__story--close',
+      {
+        autoAlpha: 0,
+      },
+      {
+        duration: 3,
+        delay: 1,
+        ease: 'power3.out',
+        autoAlpha: 1,
+        onComplete: () => {
+          document.querySelector('.ui__story--close').style.transition = '1s ease-in-out'
         },
       }
     )

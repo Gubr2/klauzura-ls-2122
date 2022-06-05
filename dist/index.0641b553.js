@@ -612,6 +612,7 @@ class WebGL {
         this.hoverLineHeight = 0.6;
         this.hoverLineThickness = 0.0075;
         this.hoverTextShift = 0.05;
+        this.hoverIndex;
         // ---> Camera
         this.introValues = {
             height: 2,
@@ -691,12 +692,12 @@ class WebGL {
         this.slowIndex;
         // Fonts
         this.attacktype = new FontFace('attacktype', 'url(./src/fonts/AttackType-Regular.ttf');
-        this.craftwork = new FontFace('craftwork', 'url(./src/fonts/CraftworkGrotesk-Medium.ttf');
+        this.work = new FontFace('work', 'url(./src/fonts/WorkSans-Medium.ttf');
         this.attacktype.load().then(function(font) {
             document.fonts.add(font);
             console.log('Attack Type Loaded');
         });
-        this.craftwork.load().then(function(font) {
+        this.work.load().then(function(font) {
             document.fonts.add(font);
             console.log('Craftwork Loaded');
         });
@@ -705,8 +706,11 @@ class WebGL {
         this.introBtn = document.querySelector('.ui__intro--btn');
         this.readBtn = document.querySelector('.ui__read--btn');
         this.readBtnClose = document.querySelector('.ui__story--btn');
+        this.readBtnX = document.querySelector('.ui__story--close');
         // Texts
+        this.storyNumber = document.querySelector('.ui__story--number');
         this.storyTitle = document.querySelector('.ui__story--title');
+        this.storyBody = document.querySelector('.ui__story--body');
         // Sidebar
         this.sidebar = document.querySelector('.ui__sidebar');
         this.sidebarProgress = document.querySelector('.ui__sidebar--progress');
@@ -1174,7 +1178,7 @@ class WebGL {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 // ---> Number
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '20px craftwork';
+                this.ctx.font = '20px work';
                 this.ctx.fillText(`0${this.objectIndex}`, 0, 20);
                 // ---> Upper Text
                 this.ctx.fillStyle = 'white';
@@ -1240,6 +1244,8 @@ class WebGL {
                         }
                     };
                 }
+                this.objectIndex = (index + 1) / this.hoverObjectCount - 1;
+                if (Number.isInteger(this.objectIndex)) this.hoverIndex = this.objectIndex;
             }
         });
     }
@@ -1272,7 +1278,10 @@ class WebGL {
         });
         // ---> Sidebar
         this.objectIndex = (index1 + 1) / this.hoverObjectCount - 1;
-        if (Number.isInteger(this.objectIndex)) this.sidebarItems[this.objectIndex].style.opacity = '1';
+        if (Number.isInteger(this.objectIndex)) {
+            this.sidebarItems[this.objectIndex].style.opacity = '1';
+            this.hoverIndex = this.objectIndex;
+        }
         this.ui.read();
         this.camera.updateProjectionMatrix();
         // ---> Light
@@ -1372,7 +1381,9 @@ class WebGL {
             this.videoTransition.play();
         }, 500);
         this.ui.hideRead();
-        this.storyTitle.innerHTML = 'Being ill meant a certain death';
+        this.storyTitle.innerHTML = this.texts.collection[this.hoverIndex].upperText + this.texts.collection[this.hoverIndex].bottomText;
+        this.storyNumber.innerHTML = `0${this.hoverIndex + 1}`;
+        this.storyBody.innerHTML = this.texts.collection[this.hoverIndex].body;
         this.textSeparate.separate('[data-read]').then(()=>{
             setTimeout(()=>{
                 this.ui.revealStory();
@@ -1381,6 +1392,7 @@ class WebGL {
     }
     readCloseHandler() {
         this.readBtnClose.addEventListener('click', this.readClose.bind(this));
+        this.readBtnX.addEventListener('click', this.readClose.bind(this));
     }
     readClose() {
         _gsapDefault.default.to(this.camera.position, {
@@ -39566,20 +39578,24 @@ class Texts {
     constructor(){
         this.collection = [
             {
-                upperText: 'Never made it into',
-                bottomText: 'the basement.'
+                upperText: 'Never made it into ',
+                bottomText: 'the basement.',
+                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
             },
             {
                 upperText: 'Went for water.',
-                bottomText: ''
+                bottomText: '',
+                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
             },
             {
-                upperText: 'Shot for being',
-                bottomText: 'being alive.'
+                upperText: 'Shot for being ',
+                bottomText: 'being alive.',
+                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
             },
             {
-                upperText: 'Being ill meant',
-                bottomText: 'a certain death.'
+                upperText: 'Being ill meant ',
+                bottomText: 'a certain death.',
+                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
             }, 
         ];
     }
@@ -39735,18 +39751,50 @@ class UI {
             }, {
                 duration: 3,
                 ease: 'power3.out',
-                autoAlpha: 1,
+                autoAlpha: 0.75,
                 y: '0%',
                 stagger: {
                     amount: 0.5,
                     axis: 'x'
+                },
+                onStart: ()=>{
+                    _gsapDefault.default.fromTo('.ui__intro__text--2 span span', {
+                        autoAlpha: 0.25,
+                        y: 'random(2%, -2%)'
+                    }, {
+                        duration: 3,
+                        ease: 'power3.out',
+                        autoAlpha: 1,
+                        y: '0%',
+                        stagger: {
+                            amount: 0.5,
+                            axis: 'x'
+                        }
+                    });
                 }
             });
             this.tl.to('.ui__intro__text--1 span span', {
                 autoAlpha: 0,
+                y: 'random(2%, -2%)',
                 ease: 'power3.out',
                 duration: 1.5,
                 delay: 1,
+                onStart: ()=>{
+                    _gsapDefault.default.to('.ui__intro__text--2 span span', {
+                        autoAlpha: 0,
+                        y: 'random(2%, -2%)',
+                        ease: 'power3.out',
+                        duration: 1.5,
+                        delay: 0.25,
+                        onComplete: ()=>{
+                            resolve();
+                        }
+                    });
+                    _gsapDefault.default.to('.lds-ring', {
+                        autoAlpha: 0,
+                        duration: 1
+                    });
+                },
                 onComplete: ()=>{
                     resolve();
                 }
@@ -39808,6 +39856,7 @@ class UI {
                         document.addEventListener('mousemove', (e)=>{
                             _gsapDefault.default.to('.ui__intro__text--3 span span', {
                                 autoAlpha: 0,
+                                y: 'random(2%, -2%)',
                                 ease: 'power3.out',
                                 duration: 1.5,
                                 delay: 1
@@ -39884,19 +39933,25 @@ class UI {
         this.storyContainer.style.opacity = '1';
         this.storyContainer.scrollTo(0, 0);
         _gsapDefault.default.fromTo('.ui__story--title span', {
-            autoAlpha: 0
+            autoAlpha: 0,
+            y: 'random(2%, -2%)'
         }, {
-            delay: 0.25,
+            delay: 1.25,
             duration: 3,
+            y: 0,
             ease: 'power3.out',
             autoAlpha: 1,
-            stagger: 0.025
+            stagger: {
+                from: 'center',
+                amount: 0.75,
+                axis: 'x'
+            }
         });
         _gsapDefault.default.fromTo('.ui__story--number', {
             autoAlpha: 0
         }, {
             duration: 3,
-            delay: 0.5,
+            delay: 1.5,
             ease: 'power3.out',
             autoAlpha: 0.5
         });
@@ -39904,7 +39959,7 @@ class UI {
             autoAlpha: 0
         }, {
             duration: 3,
-            delay: 0.75,
+            delay: 2,
             ease: 'power3.out',
             autoAlpha: 1
         });
@@ -39912,11 +39967,22 @@ class UI {
             autoAlpha: 0
         }, {
             duration: 3,
-            delay: 1,
+            delay: 3,
             ease: 'power3.out',
             autoAlpha: 1,
             onComplete: ()=>{
                 document.querySelector('.ui__story--btn').style.transition = '1s ease-in-out';
+            }
+        });
+        _gsapDefault.default.fromTo('.ui__story--close', {
+            autoAlpha: 0
+        }, {
+            duration: 3,
+            delay: 1,
+            ease: 'power3.out',
+            autoAlpha: 1,
+            onComplete: ()=>{
+                document.querySelector('.ui__story--close').style.transition = '1s ease-in-out';
             }
         });
         _gsapDefault.default.to('.ui__top [data-reveal="ui"]', {

@@ -73,6 +73,7 @@ export default class WebGL {
     this.hoverLineHeight = 0.6
     this.hoverLineThickness = 0.0075
     this.hoverTextShift = 0.05
+    this.hoverIndex
 
     // ---> Camera
     this.introValues = {
@@ -174,14 +175,14 @@ export default class WebGL {
 
     // Fonts
     this.attacktype = new FontFace('attacktype', 'url(./src/fonts/AttackType-Regular.ttf')
-    this.craftwork = new FontFace('craftwork', 'url(./src/fonts/CraftworkGrotesk-Medium.ttf')
+    this.work = new FontFace('work', 'url(./src/fonts/WorkSans-Medium.ttf')
 
     this.attacktype.load().then(function (font) {
       document.fonts.add(font)
       console.log('Attack Type Loaded')
     })
 
-    this.craftwork.load().then(function (font) {
+    this.work.load().then(function (font) {
       document.fonts.add(font)
       console.log('Craftwork Loaded')
     })
@@ -191,9 +192,12 @@ export default class WebGL {
     this.introBtn = document.querySelector('.ui__intro--btn')
     this.readBtn = document.querySelector('.ui__read--btn')
     this.readBtnClose = document.querySelector('.ui__story--btn')
+    this.readBtnX = document.querySelector('.ui__story--close')
 
     // Texts
+    this.storyNumber = document.querySelector('.ui__story--number')
     this.storyTitle = document.querySelector('.ui__story--title')
+    this.storyBody = document.querySelector('.ui__story--body')
 
     // Sidebar
     this.sidebar = document.querySelector('.ui__sidebar')
@@ -766,7 +770,7 @@ export default class WebGL {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         // ---> Number
         this.ctx.fillStyle = 'white'
-        this.ctx.font = '20px craftwork'
+        this.ctx.font = '20px work'
         this.ctx.fillText(`0${this.objectIndex}`, 0, 20)
 
         // ---> Upper Text
@@ -878,6 +882,12 @@ export default class WebGL {
             }
           }
         }
+
+        this.objectIndex = (index + 1) / this.hoverObjectCount - 1
+
+        if (Number.isInteger(this.objectIndex)) {
+          this.hoverIndex = this.objectIndex
+        }
       }
     })
   }
@@ -922,6 +932,8 @@ export default class WebGL {
 
     if (Number.isInteger(this.objectIndex)) {
       this.sidebarItems[this.objectIndex].style.opacity = '1'
+
+      this.hoverIndex = this.objectIndex
     }
 
     this.ui.read()
@@ -1048,7 +1060,9 @@ export default class WebGL {
 
     this.ui.hideRead()
 
-    this.storyTitle.innerHTML = 'Being ill meant a certain death'
+    this.storyTitle.innerHTML = this.texts.collection[this.hoverIndex].upperText + this.texts.collection[this.hoverIndex].bottomText
+    this.storyNumber.innerHTML = `0${this.hoverIndex + 1}`
+    this.storyBody.innerHTML = this.texts.collection[this.hoverIndex].body
     this.textSeparate.separate('[data-read]').then(() => {
       setTimeout(() => {
         this.ui.revealStory()
@@ -1058,6 +1072,7 @@ export default class WebGL {
 
   readCloseHandler() {
     this.readBtnClose.addEventListener('click', this.readClose.bind(this))
+    this.readBtnX.addEventListener('click', this.readClose.bind(this))
   }
 
   readClose() {

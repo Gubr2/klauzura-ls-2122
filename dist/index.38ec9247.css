@@ -359,6 +359,11 @@ body {
   overflow-y: scroll;
 }
 
+.ui__story--container::-webkit-scrollbar {
+  width: 0;
+  background: none;
+}
+
 .ui__story {
   z-index: 99;
   flex-direction: column;
@@ -692,6 +697,116 @@ video .clouds, video .clouds__transition {
   color: #333230;
   font-family: attack_typeregular;
   font-size: 4.5rem;
+}
+
+.about {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  z-index: 1;
+  z-index: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 5rem;
+  margin-bottom: 20rem;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow-y: scroll;
+}
+
+.about::-webkit-scrollbar {
+  width: 0;
+  background: none;
+}
+
+.about__hr {
+  width: 52%;
+  min-height: .1rem;
+  opacity: .25;
+  background-color: #fff;
+  margin: 10rem 0;
+}
+
+.about__text {
+  width: 30%;
+  color: #fff;
+  margin-top: 30rem;
+  font-family: work_sansregular;
+  font-size: 1.4rem;
+  line-height: 2rem;
+}
+
+.about__title {
+  color: #fff;
+  margin-bottom: 10rem;
+  font-family: attack_typeregular;
+  font-size: 4.5rem;
+}
+
+.about__image {
+  width: 100%;
+}
+
+.about__image:last-child {
+  margin-bottom: 20rem;
+}
+
+.about__description {
+  width: 52%;
+  min-height: 30rem;
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.about__description__container {
+  width: 30%;
+  margin-bottom: 2rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.about__description__number {
+  color: #fff;
+  opacity: .5;
+  margin-bottom: 1rem;
+  font-family: work_sansregular;
+  font-size: 1.4rem;
+  line-height: 2rem;
+}
+
+.about__description__body {
+  color: #fff;
+  font-family: work_sansregular;
+  font-size: 1.4rem;
+  line-height: 2rem;
+}
+
+.about__arrow {
+  width: .1rem;
+  height: 75%;
+  background-color: #fff;
+  position: relative;
+}
+
+.about__arrow--end {
+  width: .1rem;
+  height: 2rem;
+  background-color: #fff;
+  position: absolute;
+  bottom: .4rem;
+}
+
+.about__arrow--end:nth-child(1) {
+  transform: rotate(45deg)translateX(1rem);
+}
+
+.about__arrow--end:nth-child(2) {
+  transform: rotate(-45deg)translateX(-1rem);
 }
 
 /*# sourceMappingURL=index.38ec9247.css.map */

@@ -1,9 +1,11 @@
 import gsap from 'gsap'
 import Texts from './texts'
+import ScrollTrigger from 'gsap/ScrollTrigger'
 
 export default class UI {
   constructor() {
     this.texts = new Texts()
+    gsap.registerPlugin(ScrollTrigger)
 
     this.storyContainer = document.querySelector('.ui__story--container')
 
@@ -631,9 +633,11 @@ export default class UI {
     if (state == 'about') {
       this.openAnimation('#333230')
       this.changeUI('#fff')
+      this.aboutRevealIn()
     } else if (state == 'allStories') {
       this.openAnimation('#fff')
       this.changeUI('#333230')
+      this.allStoriesRevealIn()
     }
   }
 
@@ -641,6 +645,7 @@ export default class UI {
     this.closeAnimation()
     this.changeUI('#fff')
     this.allStoriesRevealOut()
+    this.aboutRevealOut()
   }
 
   menuChange(state) {
@@ -648,16 +653,18 @@ export default class UI {
       this.changeAnimation('#333230')
       this.changeUI('#fff')
       this.allStoriesRevealOut()
+      this.aboutRevealIn()
     } else if (state == 'allStories') {
       this.changeAnimation('#fff')
       this.changeUI('#333230')
       this.allStoriesRevealIn()
+      this.aboutRevealOut()
     }
   }
 
   openAnimation(backgroundColor) {
     gsap.to(this.menuOverlay, {
-      autoAlpha: 1,
+      autoAlpha: 0.9,
       duration: 1.5,
       ease: 'power3.inOut',
       onStart: () => {
@@ -685,8 +692,6 @@ export default class UI {
       duration: 1.5,
       ease: 'power3.inOut',
     })
-
-    this.allStoriesRevealIn()
   }
 
   closeAnimation() {
@@ -739,6 +744,114 @@ export default class UI {
       backgroundColor: color,
       duration: 1,
       ease: 'power3.inOut',
+    })
+  }
+
+  aboutRevealIn() {
+    this.about.style.display = 'flex'
+
+    gsap.utils.toArray('[data-reveal="about"]').forEach((selection) => {
+      gsap.fromTo(
+        selection,
+        {
+          autoAlpha: 0,
+        },
+        {
+          autoAlpha: 1,
+          duration: 1.5,
+          delay: 0.5,
+          ease: 'power3.inOut',
+          stagger: 0.1,
+          scrollTrigger: {
+            scroller: '.about',
+            trigger: selection,
+            // markers: true,
+            // toggleActions: 'restart none restart none',
+          },
+        }
+      )
+    })
+
+    gsap.utils.toArray('[data-reveal="number"]').forEach((selection) => {
+      gsap.fromTo(
+        selection,
+        {
+          autoAlpha: 0,
+        },
+        {
+          autoAlpha: 0.5,
+          duration: 1.5,
+          delay: 0.5,
+          ease: 'power3.inOut',
+          stagger: 0.1,
+          scrollTrigger: {
+            scroller: '.about',
+            trigger: selection,
+            // markers: true,
+            // toggleActions: 'restart none restart none',
+          },
+        }
+      )
+    })
+
+    gsap.utils.toArray('[data-reveal="hr"]').forEach((selection) => {
+      gsap.fromTo(
+        selection,
+        {
+          scaleX: 0,
+        },
+        {
+          scaleX: 1,
+          transformOrigin: 'left',
+          duration: 1.5,
+          delay: 0.5,
+          ease: 'power3.inOut',
+          stagger: 0.1,
+          scrollTrigger: {
+            scroller: '.about',
+            trigger: selection,
+            // markers: true,
+            // toggleActions: 'restart none restart none',
+          },
+        }
+      )
+    })
+
+    gsap.utils.toArray('[data-reveal="arrow"]').forEach((selection) => {
+      gsap.fromTo(
+        selection,
+        {
+          height: '0%',
+          autoAlpha: 0,
+        },
+        {
+          height: '100%',
+          autoAlpha: 1,
+          duration: 1.5,
+          delay: 0.25,
+          ease: 'expo.inOut',
+          stagger: 0.1,
+          scrollTrigger: {
+            scroller: '.about',
+            trigger: selection,
+            // markers: true,
+            // toggleActions: 'restart none restart none',
+          },
+        }
+      )
+    })
+  }
+
+  aboutRevealOut() {
+    gsap.to(this.about, {
+      autoAlpha: 0,
+      duration: 1,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        this.about.style.display = 'none'
+        this.about.style.opacity = 1
+        this.about.style.visibility = 'visible'
+      },
     })
   }
 

@@ -21,6 +21,7 @@ export default class Fullscreen {
   openFullscreen() {
     this.buttonFlag = false
     // this.button.style.visibility = 'hidden'
+    this.button.innerHTML = 'fullscreen_exit'
 
     if (this.elem.requestFullscreen) {
       this.elem.requestFullscreen()
@@ -36,6 +37,8 @@ export default class Fullscreen {
   /* Close fullscreen */
   closeFullscreen() {
     this.buttonFlag = true
+
+    this.button.innerHTML = 'fullscreen'
 
     if (document.exitFullscreen) {
       document.exitFullscreen()

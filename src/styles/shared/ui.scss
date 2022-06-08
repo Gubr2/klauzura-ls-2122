@@ -18,6 +18,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  z-index: 9999;
+}
+
+.ui__intro__container {
+  z-index: 9999;
 }
 
 .ui__intro__title {
@@ -67,8 +72,9 @@
 .ui__top {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
   height: 11rem;
   display: flex;
   align-items: center;
@@ -76,6 +82,7 @@
   gap: 5.5rem;
   padding: 0 2.4rem;
   box-sizing: border-box;
+  z-index: 2;
   span {
     font-family: 'work_sansmedium';
     font-size: 1.4rem;
@@ -100,6 +107,7 @@
   justify-content: space-between;
   padding: 0 2.4rem;
   box-sizing: border-box;
+  z-index: 2;
   span {
     color: $white;
     cursor: pointer;
@@ -176,7 +184,7 @@
   bottom: 12rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 999;
+  z-index: 9999;
   display: none;
 }
 
@@ -238,8 +246,8 @@
 
 .ui__story--close {
   position: fixed;
-  right: 10rem;
-  top: 10rem;
+  right: 4rem;
+  top: 4rem;
   width: 3rem;
   height: 3rem;
   cursor: pointer;

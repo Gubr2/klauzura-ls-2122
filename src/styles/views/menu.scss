@@ -1,0 +1,113 @@
+.menu__overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: $black;
+  width: 100vw;
+  height: 100vh;
+  z-index: 998;
+  display: none;
+  opacity: 0;
+}
+
+.menu--close {
+  position: fixed;
+  right: 4rem;
+  top: 4rem;
+  width: 3rem;
+  height: 3rem;
+  cursor: pointer;
+  display: none;
+  opacity: 0;
+  z-index: 2;
+  &:hover {
+    opacity: 0.5 !important;
+  }
+}
+
+.menu--close__line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3rem;
+  height: 0.2rem;
+  transform: rotate(45deg);
+  background-color: $black;
+  opacity: 0.5;
+  z-index: 999;
+  &:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  &:nth-child(2) {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+
+// ---> All Stories
+.allstories {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 0rem 15rem;
+  flex-direction: column;
+  overflow-y: scroll;
+  z-index: 1;
+  display: none;
+  &::-webkit-scrollbar {
+    width: 0; /* Remove scrollbar space */
+    background: transparent; /* Optional: just make scrollbar invisible */
+  }
+}
+
+.allstories__item {
+  display: flex;
+  gap: 7rem;
+  min-height: 10rem;
+  width: 100%;
+  align-items: center;
+  position: relative;
+  padding: 0 4rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  &:first-child {
+    margin-top: 20rem;
+  }
+  &:last-child {
+    margin-bottom: 20rem;
+  }
+  &:hover {
+    background-color: $black;
+    .allstories__item__number {
+      color: $white;
+    }
+    .allstories__item__title {
+      color: $white;
+    }
+  }
+}
+
+.allstories__item__hr {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 0.1rem;
+  width: 100%;
+  background-color: $black;
+  opacity: 0.25;
+}
+
+.allstories__item__number {
+  font-size: 1.4rem;
+  font-family: 'work_sansmedium';
+  color: $black;
+}
+
+.allstories__item__title {
+  font-size: 4.5rem;
+  font-family: 'attack_typeregular';
+  color: $black;
+}

@@ -627,6 +627,15 @@ class WebGL {
         ///////////////////////////////////////////////
         ///////////////////////////////////////////////
         //
+        // AUDIO
+        //
+        this.audio_bg = new Audio('./src/audio/bg.mp3');
+        this.audio_intro = new Audio('./src/audio/intro.mp3');
+        this.audio_readIn = new Audio('./src/audio/read-in.mp3');
+        this.audio_readOut = new Audio('./src/audio/read-out.mp3');
+        this.audio_reveal = new Audio('./src/audio/reveal.mp3');
+        this.audio_reset = new Audio('./src/audio/reset.mp3');
+        //
         // STATS
         //
         this.stats = new _statsJsDefault.default();
@@ -684,6 +693,7 @@ class WebGL {
         this.startFlag = false;
         this.slowFlag = [];
         this.speedFlag = true;
+        this.audioRevealFlag = true;
         // Empty Variables
         this.lightSource;
         this.lightObject;
@@ -837,6 +847,12 @@ class WebGL {
     // this.ui.recolorIcons()
     }
     enter() {
+        // ---> Audio
+        this.audio_bg.play();
+        setTimeout(()=>{
+            this.audio_intro.play();
+        }, 500);
+        // ---> Animation
         _gsapDefault.default.fromTo(this.lightObject.position, {
             y: 3
         }, {
@@ -1276,6 +1292,11 @@ class WebGL {
             duration: 4,
             ease: 'power3'
         });
+        // ---> Audio
+        if (this.audioRevealFlag) {
+            this.audio_reveal.play();
+            this.audioRevealFlag = false;
+        }
         // ---> Sidebar
         this.objectIndex = (index1 + 1) / this.hoverObjectCount - 1;
         if (Number.isInteger(this.objectIndex)) {
@@ -1348,6 +1369,9 @@ class WebGL {
         this.readBtn.addEventListener('click', this.read.bind(this));
     }
     read() {
+        // ---> Audio
+        this.audio_readIn.play();
+        // ---> Animation
         _gsapDefault.default.to(this.camera.position, {
             y: 7,
             duration: 3,
@@ -1395,6 +1419,9 @@ class WebGL {
         this.readBtnX.addEventListener('click', this.readClose.bind(this));
     }
     readClose() {
+        // ---> Audio
+        this.audio_readOut.play();
+        // ---> Animation
         _gsapDefault.default.to(this.camera.position, {
             y: 4,
             duration: 2,
@@ -1431,10 +1458,13 @@ class WebGL {
         this.resetBtn.addEventListener('click', this.reset.bind(this));
     }
     reset() {
+        // ---> Audio
+        this.audio_reset.play();
         // ---> Global
         this.globalSpeed.value = 0.0035;
         this.mouseFlag = true;
         this.objectsBlock = false;
+        this.audioRevealFlag = true;
         // ---> Video
         this.video.playbackRate = 2;
         _gsapDefault.default.to(this.video, {
@@ -39578,24 +39608,34 @@ class Texts {
     constructor(){
         this.collection = [
             {
-                upperText: 'Never made it into ',
-                bottomText: 'the basement.',
-                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
-            },
-            {
-                upperText: 'Went for water.',
+                upperText: 'Too old to hide.',
                 bottomText: '',
-                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
+                body: 'Alexander was an old man at an advanced age. Despite his health problems, he enjoyed the grandchildren who visited him and his daughter every weekend. And perhaps they would have visited him the following years he had not grown old, and made himself immobile. The Russian bombing hit the panel house in which he lived. His unruly legs were not fast enough, and hiding in a cellar became a distant, unattainable goal for him.'
             },
             {
-                upperText: 'Shot for being ',
-                bottomText: 'being alive.',
-                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
+                upperText: 'No windows, no heat.',
+                bottomText: '',
+                body: "When the pressure wave shatters your windows, the ugly, callous winter is the first to visit you. Trapped in her apartment, the unruly old Mrs. Oksana is waiting in her bed for help. But who will come after you when it is dangerous to go out on the street? Who will come for you if you don't have anyone? The only nasty, heartless winter that eventually turns into the word death."
             },
             {
-                upperText: 'Being ill meant ',
-                bottomText: 'a certain death.',
-                body: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci vehicula lobortis. Ut neque, risus, diam, habitant. Facilisi pellentesque sed urna pellentesque at duis odio. Neque nullam ut in hendrerit sit ipsum tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Turpis sed pretium ipsum, ultrices diam platea orci.'
+                upperText: 'Thirst in exchange ',
+                bottomText: 'for life',
+                body: 'Maxim was left with his family without water, electricity and food in his apartment in a housing estate in the east of the city. Water is only available from a spring nearby. After all, children must not stay thirsty. Just as they must not be left without a father who is hit by Russian ammunition the moment the first drop falls into the bottle.'
+            },
+            {
+                upperText: 'There is no human dignity ',
+                bottomText: 'in war.',
+                body: 'Vasyl is huddled in a cellar with about fifty other people. Each of them with their own life, their own destiny and especially their own needs. Needs that do not get a pinch of privacy in a crowded cellar. Dignity does not exist and, if it does, only at the cost of death. However, the desire for privacy is sometimes stronger, than a fear from getting hit by a missile.'
+            },
+            {
+                upperText: 'A place where a new life ',
+                bottomText: 'was to be born.',
+                body: 'Little Nataliya was a dream baby that her parents worked hard for the last few years. However, old age and health problems caused their own, so it took years to get pregnant. And they did not yet know that the biggest problem would come on the day of childbirth, when the hospital was hit by intense Russian bombing. The place where a new life was to emerge, existing dissapeared.'
+            },
+            {
+                upperText: 'Evacuation to hell.',
+                bottomText: '',
+                body: 'Anastasiya was one of the lucky ones to get on the evacuation bus. After a week in the bombed city, it was like a small miracle, the hope that he would finally get out of hell. However, hell only met her on the bus, in the form of rockets, on the way in the evacuation corridor.'
             }, 
         ];
     }
@@ -39607,9 +39647,29 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _gsap = require("gsap");
 var _gsapDefault = parcelHelpers.interopDefault(_gsap);
+var _texts = require("./texts");
+var _textsDefault = parcelHelpers.interopDefault(_texts);
 class UI {
     constructor(){
+        this.texts = new _textsDefault.default();
         this.storyContainer = document.querySelector('.ui__story--container');
+        this.btnAbout = document.querySelector('.ui__top__btn--about');
+        this.btnAllStories = document.querySelector('.ui__top__btn--allstories');
+        this.btnClose = document.querySelector('.menu--close');
+        this.about = document.querySelector('.about');
+        this.allStories = document.querySelector('.allstories');
+        this.menuOverlay = document.querySelector('.menu__overlay');
+        this.uiIntro = document.querySelector('.ui__intro');
+        this.uiRead = document.querySelector('.ui__read');
+        this.uiSidebar = document.querySelector('.ui__sidebar');
+        this.menuAboutHandler();
+        this.menuAllStoriesHandler();
+        this.closeButtonHandler();
+        this.generateAllStories();
+        this.menuAboutFlag = true;
+        this.menuAllStoriesFlag = true;
+        this.menuOverlayFlag = true;
+        this.mousemoveFlag = true;
     }
     //
     // INTRO
@@ -39728,6 +39788,11 @@ class UI {
             autoAlpha: 0,
             scale: 0.8
         });
+        _gsapDefault.default.to('.ui__top__item', {
+            autoAlpha: 0.75,
+            duration: 2,
+            ease: 'expo.out'
+        });
     }
     //
     // RECOLOR ICONS
@@ -39754,8 +39819,8 @@ class UI {
                 autoAlpha: 0.75,
                 y: '0%',
                 stagger: {
-                    amount: 0.5,
-                    axis: 'x'
+                    amount: 1,
+                    from: 'center'
                 },
                 onStart: ()=>{
                     _gsapDefault.default.fromTo('.ui__intro__text--2 span span', {
@@ -39767,8 +39832,8 @@ class UI {
                         autoAlpha: 1,
                         y: '0%',
                         stagger: {
-                            amount: 0.5,
-                            axis: 'x'
+                            amount: 1,
+                            from: 'center'
                         }
                     });
                 }
@@ -39779,6 +39844,10 @@ class UI {
                 ease: 'power3.out',
                 duration: 1.5,
                 delay: 1,
+                stagger: {
+                    amount: 1,
+                    from: 'center'
+                },
                 onStart: ()=>{
                     _gsapDefault.default.to('.ui__intro__text--2 span span', {
                         autoAlpha: 0,
@@ -39786,6 +39855,10 @@ class UI {
                         ease: 'power3.out',
                         duration: 1.5,
                         delay: 0.25,
+                        stagger: {
+                            amount: 1,
+                            from: 'center'
+                        },
                         onComplete: ()=>{
                             resolve();
                         }
@@ -39843,8 +39916,8 @@ class UI {
                 autoAlpha: 1,
                 y: '0%',
                 stagger: {
-                    amount: 0.5,
-                    axis: 'x'
+                    amount: 1,
+                    from: 'center'
                 },
                 onStart: ()=>{
                     _gsapDefault.default.to('.ui__intro__text--icon', {
@@ -39854,24 +39927,31 @@ class UI {
                     setTimeout(()=>{
                         resolve();
                         document.addEventListener('mousemove', (e)=>{
-                            _gsapDefault.default.to('.ui__intro__text--3 span span', {
-                                autoAlpha: 0,
-                                y: 'random(2%, -2%)',
-                                ease: 'power3.out',
-                                duration: 1.5,
-                                delay: 1
-                            });
-                            _gsapDefault.default.to('.ui__intro__text--icon', {
-                                autoAlpha: 0,
-                                ease: 'power3.out',
-                                duration: 1.5,
-                                delay: 1
-                            });
-                            _gsapDefault.default.to('.ui__sidebar', {
-                                duration: 1,
-                                ease: 'power3.out',
-                                autoAlpha: 1
-                            });
+                            if (this.mousemoveFlag) {
+                                _gsapDefault.default.to('.ui__intro__text--3 span span', {
+                                    autoAlpha: 0,
+                                    y: 'random(2%, -2%)',
+                                    ease: 'power3.out',
+                                    duration: 1.5,
+                                    delay: 1,
+                                    stagger: {
+                                        amount: 1,
+                                        from: 'center'
+                                    }
+                                });
+                                _gsapDefault.default.to('.ui__intro__text--icon', {
+                                    autoAlpha: 0,
+                                    ease: 'power3.out',
+                                    duration: 1.5,
+                                    delay: 1
+                                });
+                                _gsapDefault.default.to('.ui__sidebar', {
+                                    duration: 1,
+                                    ease: 'power3.out',
+                                    autoAlpha: 1
+                                });
+                                this.mousemoveFlag = false;
+                            }
                         });
                     }, 2000);
                 }
@@ -40002,10 +40082,233 @@ class UI {
             }
         });
     }
+    //
+    // MENU
+    //
+    // GENERATE ALL STORIES ITEMS
+    generateAllStories() {
+        this.texts.collection.forEach((item, index)=>{
+            this.allStories.insertAdjacentHTML('beforeend', `
+        <div class="allstories__item">
+          <div class="allstories__item__number">0${index + 1}</div>
+          <div class="allstories__item__title">${item.upperText + item.bottomText}</div>
+          <div class="allstories__item__hr"></div>
+        </div>
+        `);
+        });
+    }
+    // HANDLERS
+    // ---> About Handler
+    menuAboutHandler() {
+        this.btnAbout.addEventListener('click', ()=>{
+            if (this.menuOverlayFlag) {
+                this.menuOpen('about');
+                this.menuOverlayFlag = false;
+                this.menuAboutFlag = false;
+            } else if (this.menuAllStoriesFlag) {
+                this.menuOverlayFlag = true;
+                this.menuClose();
+                this.menuAboutFlag = true;
+                this.menuAllStoriesFlag = true;
+            } else {
+                this.menuChange('about');
+                this.menuAboutFlag = false;
+                this.menuAllStoriesFlag = true;
+            }
+        // console.log(`menuAboutFlag: ${this.menuAboutFlag},
+        // menuAllStoriesFlag: ${this.menuAllStoriesFlag},
+        // menuOverlayFlag: ${this.menuOverlayFlag}`)
+        });
+    }
+    // ---> All Stories Handler
+    menuAllStoriesHandler() {
+        this.btnAllStories.addEventListener('click', ()=>{
+            if (this.menuOverlayFlag) {
+                this.menuOpen('allStories');
+                this.menuOverlayFlag = false;
+                this.menuAllStoriesFlag = false;
+            } else if (this.menuAboutFlag) {
+                this.menuOverlayFlag = true;
+                this.menuClose();
+                this.menuAllStoriesFlag = true;
+                this.menuAboutFlag = true;
+            } else {
+                this.menuChange('allStories');
+                this.menuAllStoriesFlag = false;
+                this.menuAboutFlag = true;
+            }
+        // console.log(`menuAboutFlag: ${this.menuAboutFlag},
+        // menuAllStoriesFlag: ${this.menuAllStoriesFlag},
+        // menuOverlayFlag: ${this.menuOverlayFlag}`)
+        });
+    }
+    // ---> Close Button Handler
+    closeButtonHandler() {
+        this.btnClose.addEventListener('click', ()=>{
+            this.menuOverlayFlag = true;
+            this.menuClose();
+            this.menuAllStoriesFlag = true;
+            this.menuAboutFlag = true;
+        });
+    }
+    // FUNCTIONS
+    menuOpen(state) {
+        if (state == 'about') {
+            this.openAnimation('#333230');
+            this.changeUI('#fff');
+        } else if (state == 'allStories') {
+            this.openAnimation('#fff');
+            this.changeUI('#333230');
+        }
+    }
+    menuClose() {
+        this.closeAnimation();
+        this.changeUI('#fff');
+        this.allStoriesRevealOut();
+    }
+    menuChange(state) {
+        if (state == 'about') {
+            this.changeAnimation('#333230');
+            this.changeUI('#fff');
+            this.allStoriesRevealOut();
+        } else if (state == 'allStories') {
+            this.changeAnimation('#fff');
+            this.changeUI('#333230');
+            this.allStoriesRevealIn();
+        }
+    }
+    openAnimation(backgroundColor) {
+        _gsapDefault.default.to(this.menuOverlay, {
+            autoAlpha: 1,
+            duration: 1.5,
+            ease: 'power3.inOut',
+            onStart: ()=>{
+                this.uiIntro.style.zIndex = '98';
+                this.uiRead.style.zIndex = '98';
+                this.menuOverlay.style.display = 'block';
+                this.menuOverlay.style.backgroundColor = backgroundColor;
+            }
+        });
+        _gsapDefault.default.to(this.btnClose, {
+            autoAlpha: 1,
+            duration: 1.5,
+            ease: 'power3.inOut',
+            onStart: ()=>{
+                this.btnClose.style.display = 'block';
+            },
+            onComplete: ()=>{
+                this.btnClose.style.transition = '1s ease-in-out';
+            }
+        });
+        _gsapDefault.default.to(this.uiSidebar, {
+            autoAlpha: 0,
+            duration: 1.5,
+            ease: 'power3.inOut'
+        });
+        this.allStoriesRevealIn();
+    }
+    closeAnimation() {
+        _gsapDefault.default.to(this.menuOverlay, {
+            autoAlpha: 0,
+            duration: 1.5,
+            ease: 'power3.inOut',
+            onComplete: ()=>{
+                this.uiIntro.style.zIndex = '9999';
+                this.uiRead.style.zIndex = '9999';
+                this.menuOverlay.style.display = 'none';
+            }
+        });
+        _gsapDefault.default.to(this.btnClose, {
+            autoAlpha: 0,
+            duration: 1.5,
+            ease: 'power3.inOut',
+            onStart: ()=>{
+                this.btnClose.style.transition = 'inherit';
+            },
+            onComplete: ()=>{
+                this.btnClose.style.display = 'none';
+            }
+        });
+        _gsapDefault.default.to(this.uiSidebar, {
+            autoAlpha: 1,
+            duration: 1.5,
+            ease: 'power3.inOut'
+        });
+    }
+    changeAnimation(backgroundColor) {
+        _gsapDefault.default.to(this.menuOverlay, {
+            backgroundColor: backgroundColor,
+            duration: 1.5,
+            ease: 'power3.inOut'
+        });
+    }
+    changeUI(color) {
+        _gsapDefault.default.to('[data-reveal="ui"]', {
+            color: color,
+            duration: 1,
+            ease: 'power3.inOut'
+        });
+        _gsapDefault.default.to('.menu--close__line', {
+            backgroundColor: color,
+            duration: 1,
+            ease: 'power3.inOut'
+        });
+    }
+    allStoriesRevealIn() {
+        _gsapDefault.default.fromTo('.allstories__item__number', {
+            autoAlpha: 0
+        }, {
+            autoAlpha: 0.5,
+            duration: 1.5,
+            delay: 0.5,
+            ease: 'power3.inOut',
+            stagger: 0.1,
+            onStart: ()=>{
+                this.allStories.style.display = 'flex';
+                document.querySelectorAll('.allstories__item').forEach((item)=>{
+                    item.style.transition = '0.25s ease-in-out';
+                });
+            }
+        });
+        _gsapDefault.default.fromTo('.allstories__item__title', {
+            autoAlpha: 0
+        }, {
+            autoAlpha: 1,
+            duration: 1.5,
+            delay: 0.5,
+            ease: 'power3.inOut',
+            stagger: 0.1
+        });
+        _gsapDefault.default.fromTo('.allstories__item__hr', {
+            scaleX: 0
+        }, {
+            scaleX: 1,
+            transformOrigin: 'left',
+            duration: 1.5,
+            delay: 0.5,
+            ease: 'power3.inOut',
+            stagger: 0.1
+        });
+    }
+    allStoriesRevealOut() {
+        _gsapDefault.default.to(this.allStories, {
+            autoAlpha: 0,
+            duration: 1,
+            ease: 'power3.inOut',
+            onComplete: ()=>{
+                this.allStories.style.display = 'none';
+                this.allStories.style.opacity = 1;
+                this.allStories.style.visibility = 'visible';
+                document.querySelectorAll('.allstories__item').forEach((item)=>{
+                    item.style.transition = 'inherit';
+                });
+            }
+        });
+    }
 }
 exports.default = UI;
 
-},{"gsap":"fPSuC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f3Ntu":[function(require,module,exports) {
+},{"gsap":"fPSuC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./texts":"cXbSw"}],"f3Ntu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class TextSeparate {
@@ -40078,12 +40381,14 @@ class Fullscreen {
     /* View in fullscreen */ openFullscreen() {
         this.buttonFlag = false;
         // this.button.style.visibility = 'hidden'
+        this.button.innerHTML = 'fullscreen_exit';
         if (this.elem.requestFullscreen) this.elem.requestFullscreen();
         else if (this.elem.webkitRequestFullscreen) /* Safari */ this.elem.webkitRequestFullscreen();
         else if (this.elem.msRequestFullscreen) /* IE11 */ this.elem.msRequestFullscreen();
     }
     /* Close fullscreen */ closeFullscreen() {
         this.buttonFlag = true;
+        this.button.innerHTML = 'fullscreen';
         if (document.exitFullscreen) document.exitFullscreen();
         else if (document.webkitExitFullscreen) /* Safari */ document.webkitExitFullscreen();
         else if (document.msExitFullscreen) /* IE11 */ document.msExitFullscreen();

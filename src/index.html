@@ -15,60 +15,71 @@
     <video muted class="video__clouds--transition">
       <source class="clouds__transition" src="./video/klauzura_cloud-transition.mp4" type="video/mp4" />
     </video>
+    <div class="ui__intro">
+      <div class="ui__intro__symbol">
+        <div class="ui__intro__symbol--line"></div>
+        <div class="ui__intro__symbol--circle"></div>
+      </div>
+      <h1 class="ui__intro__title">
+        <span>
+          <span>M</span>
+          <span data-type="attack">a</span>
+          <span>r</span>
+          <span>i</span>
+          <span>u</span>
+          <span>p</span>
+          <span>o</span>
+          <span>l</span>
+        </span>
+        <span> </span>
+        <span
+          ><span>D</span>
+          <span>i</span>
+          <span>g</span>
+          <span>i</span>
+          <span>t</span>
+          <span data-type="attack">a</span>
+          <span>l</span>
+        </span>
+        <span> </span>
+        <span>
+          <span>M</span>
+          <span>e</span>
+          <span>m</span>
+          <span>o</span>
+          <span>r</span>
+          <span>i</span>
+          <span data-type="attack">a</span>
+          <span>l</span>
+        </span>
+      </h1>
+      <div class="ui__intro--btn">
+        <span>Enter</span>
+        <!-- <div class="--background"></div>
+        <div class="--background"></div> -->
+      </div>
+      <div class="ui__intro__text__center">
+        <p class="ui__intro__text ui__intro__text--1" data-separate>24. February 2022</p>
+        <p class="ui__intro__text ui__intro__text--2" data-separate>Innocent people started losing their lives in Mariupol, due to Russian bombing.</p>
+      </div>
+      <p class="ui__intro__text__center ui__intro__text ui__intro__text--3" data-separate>By moving you mouse, find stories of the victims.</p>
+      <div class="ui__intro__text--icon">
+        <span class="material-symbols-outlined">mouse</span>
+      </div>
+    </div>
+
+    <!-- Read -->
+    <div class="ui__read">
+      <div class="ui__read--btn">
+        <span>Read</span>
+        <!-- <div class="--background"></div>
+        <div class="--background"></div> -->
+      </div>
+      <div class="ui__read--continue">Continue</div>
+    </div>
+
     <div class="ui">
       <!-- Intro -->
-      <div class="ui__intro">
-        <div class="ui__intro__symbol">
-          <div class="ui__intro__symbol--line"></div>
-          <div class="ui__intro__symbol--circle"></div>
-        </div>
-        <h1 class="ui__intro__title">
-          <span>
-            <span>M</span>
-            <span data-type="attack">a</span>
-            <span>r</span>
-            <span>i</span>
-            <span>u</span>
-            <span>p</span>
-            <span>o</span>
-            <span>l</span>
-          </span>
-          <span> </span>
-          <span
-            ><span>D</span>
-            <span>i</span>
-            <span>g</span>
-            <span>i</span>
-            <span>t</span>
-            <span data-type="attack">a</span>
-            <span>l</span>
-          </span>
-          <span> </span>
-          <span>
-            <span>M</span>
-            <span>e</span>
-            <span>m</span>
-            <span>o</span>
-            <span>r</span>
-            <span>i</span>
-            <span data-type="attack">a</span>
-            <span>l</span>
-          </span>
-        </h1>
-        <div class="ui__intro--btn">
-          <span>Enter</span>
-          <!-- <div class="--background"></div>
-          <div class="--background"></div> -->
-        </div>
-        <div class="ui__intro__text__center">
-          <p class="ui__intro__text ui__intro__text--1" data-separate>24. February 2022</p>
-          <p class="ui__intro__text ui__intro__text--2" data-separate>Innocent people started losing their lives in Mariupol, due to Russian bombing.</p>
-        </div>
-        <p class="ui__intro__text__center ui__intro__text ui__intro__text--3" data-separate>By moving you mouse, find stories of the victims.</p>
-        <div class="ui__intro__text--icon">
-          <span class="material-symbols-outlined">mouse</span>
-        </div>
-      </div>
 
       <div class="lds-ring">
         <div></div>
@@ -79,8 +90,8 @@
 
       <!-- Top -->
       <div class="ui__top">
-        <span data-reveal="ui">About</span>
-        <span data-reveal="ui">All Stories</span>
+        <span data-reveal="ui" class="ui__top__item ui__top__btn--about">About</span>
+        <span data-reveal="ui" class="ui__top__item ui__top__btn--allstories">All Stories</span>
       </div>
 
       <!-- Bottom -->
@@ -92,16 +103,6 @@
       <!-- Sidebar -->
       <div class="ui__sidebar">
         <div class="ui__sidebar--progress"></div>
-      </div>
-
-      <!-- Read -->
-      <div class="ui__read">
-        <div class="ui__read--btn">
-          <span>Read</span>
-          <!-- <div class="--background"></div>
-          <div class="--background"></div> -->
-        </div>
-        <div class="ui__read--continue">Continue</div>
       </div>
 
       <!-- Read Reveald -->
@@ -130,9 +131,22 @@
           </div>
         </div>
       </div>
+
+      <!-- Menu Overlay -->
+      <div class="menu--close">
+        <div class="menu--close__line"></div>
+        <div class="menu--close__line"></div>
+      </div>
+
+      <div class="about"></div>
+      <div class="allstories"></div>
     </div>
     <div class="webgl"></div>
     <div class="white__cover"></div>
+
+    <!-- Views -->
+    <div class="menu__overlay"></div>
+
     <!-- <div class="btn">
       <button class="read-btn--close">Close Read</button>
     </div> -->

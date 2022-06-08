@@ -1,8 +1,32 @@
 import gsap from 'gsap'
+import Texts from './texts'
 
 export default class UI {
   constructor() {
+    this.texts = new Texts()
+
     this.storyContainer = document.querySelector('.ui__story--container')
+
+    this.btnAbout = document.querySelector('.ui__top__btn--about')
+    this.btnAllStories = document.querySelector('.ui__top__btn--allstories')
+    this.btnClose = document.querySelector('.menu--close')
+
+    this.about = document.querySelector('.about')
+    this.allStories = document.querySelector('.allstories')
+    this.menuOverlay = document.querySelector('.menu__overlay')
+    this.uiIntro = document.querySelector('.ui__intro')
+    this.uiRead = document.querySelector('.ui__read')
+    this.uiSidebar = document.querySelector('.ui__sidebar')
+
+    this.menuAboutHandler()
+    this.menuAllStoriesHandler()
+    this.closeButtonHandler()
+    this.generateAllStories()
+
+    this.menuAboutFlag = true
+    this.menuAllStoriesFlag = true
+    this.menuOverlayFlag = true
+    this.mousemoveFlag = true
   }
 
   //
@@ -158,6 +182,12 @@ export default class UI {
       autoAlpha: 0,
       scale: 0.8,
     })
+
+    gsap.to('.ui__top__item', {
+      autoAlpha: 0.75,
+      duration: 2,
+      ease: 'expo.out',
+    })
   }
 
   //
@@ -192,8 +222,8 @@ export default class UI {
           autoAlpha: 0.75,
           y: '0%',
           stagger: {
-            amount: 0.5,
-            axis: 'x',
+            amount: 1,
+            from: 'center',
           },
           onStart: () => {
             gsap.fromTo(
@@ -208,8 +238,8 @@ export default class UI {
                 autoAlpha: 1,
                 y: '0%',
                 stagger: {
-                  amount: 0.5,
-                  axis: 'x',
+                  amount: 1,
+                  from: 'center',
                 },
               }
             )
@@ -223,6 +253,10 @@ export default class UI {
         ease: 'power3.out',
         duration: 1.5,
         delay: 1,
+        stagger: {
+          amount: 1,
+          from: 'center',
+        },
         onStart: () => {
           gsap.to('.ui__intro__text--2 span span', {
             autoAlpha: 0,
@@ -230,6 +264,10 @@ export default class UI {
             ease: 'power3.out',
             duration: 1.5,
             delay: 0.25,
+            stagger: {
+              amount: 1,
+              from: 'center',
+            },
             onComplete: () => {
               resolve()
             },
@@ -294,8 +332,8 @@ export default class UI {
           autoAlpha: 1,
           y: '0%',
           stagger: {
-            amount: 0.5,
-            axis: 'x',
+            amount: 1,
+            from: 'center',
           },
           onStart: () => {
             gsap.to('.ui__intro__text--icon', {
@@ -305,24 +343,31 @@ export default class UI {
             setTimeout(() => {
               resolve()
               document.addEventListener('mousemove', (e) => {
-                gsap.to('.ui__intro__text--3 span span', {
-                  autoAlpha: 0,
-                  y: 'random(2%, -2%)',
-                  ease: 'power3.out',
-                  duration: 1.5,
-                  delay: 1,
-                })
-                gsap.to('.ui__intro__text--icon', {
-                  autoAlpha: 0,
-                  ease: 'power3.out',
-                  duration: 1.5,
-                  delay: 1,
-                })
-                gsap.to('.ui__sidebar', {
-                  duration: 1,
-                  ease: 'power3.out',
-                  autoAlpha: 1,
-                })
+                if (this.mousemoveFlag) {
+                  gsap.to('.ui__intro__text--3 span span', {
+                    autoAlpha: 0,
+                    y: 'random(2%, -2%)',
+                    ease: 'power3.out',
+                    duration: 1.5,
+                    delay: 1,
+                    stagger: {
+                      amount: 1,
+                      from: 'center',
+                    },
+                  })
+                  gsap.to('.ui__intro__text--icon', {
+                    autoAlpha: 0,
+                    ease: 'power3.out',
+                    duration: 1.5,
+                    delay: 1,
+                  })
+                  gsap.to('.ui__sidebar', {
+                    duration: 1,
+                    ease: 'power3.out',
+                    autoAlpha: 1,
+                  })
+                  this.mousemoveFlag = false
+                }
               })
             }, 2000)
           },
@@ -488,6 +533,278 @@ export default class UI {
       ease: 'power3.out',
       onComplete: () => {
         document.querySelector('.ui__story--btn').style.transition = 'inherit'
+      },
+    })
+  }
+
+  //
+  // MENU
+  //
+
+  // GENERATE ALL STORIES ITEMS
+
+  generateAllStories() {
+    this.texts.collection.forEach((item, index) => {
+      this.allStories.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div class="allstories__item">
+          <div class="allstories__item__number">0${index + 1}</div>
+          <div class="allstories__item__title">${item.upperText + item.bottomText}</div>
+          <div class="allstories__item__hr"></div>
+        </div>
+        `
+      )
+    })
+  }
+
+  // HANDLERS
+
+  // ---> About Handler
+
+  menuAboutHandler() {
+    this.btnAbout.addEventListener('click', () => {
+      if (this.menuOverlayFlag) {
+        this.menuOpen('about')
+        this.menuOverlayFlag = false
+        this.menuAboutFlag = false
+      } else {
+        if (this.menuAllStoriesFlag) {
+          this.menuOverlayFlag = true
+          this.menuClose()
+          this.menuAboutFlag = true
+          this.menuAllStoriesFlag = true
+        } else {
+          this.menuChange('about')
+          this.menuAboutFlag = false
+          this.menuAllStoriesFlag = true
+        }
+      }
+
+      // console.log(`menuAboutFlag: ${this.menuAboutFlag},
+      // menuAllStoriesFlag: ${this.menuAllStoriesFlag},
+      // menuOverlayFlag: ${this.menuOverlayFlag}`)
+    })
+  }
+
+  // ---> All Stories Handler
+
+  menuAllStoriesHandler() {
+    this.btnAllStories.addEventListener('click', () => {
+      if (this.menuOverlayFlag) {
+        this.menuOpen('allStories')
+        this.menuOverlayFlag = false
+        this.menuAllStoriesFlag = false
+      } else {
+        if (this.menuAboutFlag) {
+          this.menuOverlayFlag = true
+          this.menuClose()
+          this.menuAllStoriesFlag = true
+          this.menuAboutFlag = true
+        } else {
+          this.menuChange('allStories')
+          this.menuAllStoriesFlag = false
+          this.menuAboutFlag = true
+        }
+      }
+
+      // console.log(`menuAboutFlag: ${this.menuAboutFlag},
+      // menuAllStoriesFlag: ${this.menuAllStoriesFlag},
+      // menuOverlayFlag: ${this.menuOverlayFlag}`)
+    })
+  }
+
+  // ---> Close Button Handler
+
+  closeButtonHandler() {
+    this.btnClose.addEventListener('click', () => {
+      this.menuOverlayFlag = true
+      this.menuClose()
+      this.menuAllStoriesFlag = true
+      this.menuAboutFlag = true
+    })
+  }
+
+  // FUNCTIONS
+
+  menuOpen(state) {
+    if (state == 'about') {
+      this.openAnimation('#333230')
+      this.changeUI('#fff')
+    } else if (state == 'allStories') {
+      this.openAnimation('#fff')
+      this.changeUI('#333230')
+    }
+  }
+
+  menuClose() {
+    this.closeAnimation()
+    this.changeUI('#fff')
+    this.allStoriesRevealOut()
+  }
+
+  menuChange(state) {
+    if (state == 'about') {
+      this.changeAnimation('#333230')
+      this.changeUI('#fff')
+      this.allStoriesRevealOut()
+    } else if (state == 'allStories') {
+      this.changeAnimation('#fff')
+      this.changeUI('#333230')
+      this.allStoriesRevealIn()
+    }
+  }
+
+  openAnimation(backgroundColor) {
+    gsap.to(this.menuOverlay, {
+      autoAlpha: 1,
+      duration: 1.5,
+      ease: 'power3.inOut',
+      onStart: () => {
+        this.uiIntro.style.zIndex = '98'
+        this.uiRead.style.zIndex = '98'
+        this.menuOverlay.style.display = 'block'
+        this.menuOverlay.style.backgroundColor = backgroundColor
+      },
+    })
+
+    gsap.to(this.btnClose, {
+      autoAlpha: 1,
+      duration: 1.5,
+      ease: 'power3.inOut',
+      onStart: () => {
+        this.btnClose.style.display = 'block'
+      },
+      onComplete: () => {
+        this.btnClose.style.transition = '1s ease-in-out'
+      },
+    })
+
+    gsap.to(this.uiSidebar, {
+      autoAlpha: 0,
+      duration: 1.5,
+      ease: 'power3.inOut',
+    })
+
+    this.allStoriesRevealIn()
+  }
+
+  closeAnimation() {
+    gsap.to(this.menuOverlay, {
+      autoAlpha: 0,
+      duration: 1.5,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        this.uiIntro.style.zIndex = '9999'
+        this.uiRead.style.zIndex = '9999'
+        this.menuOverlay.style.display = 'none'
+      },
+    })
+
+    gsap.to(this.btnClose, {
+      autoAlpha: 0,
+      duration: 1.5,
+      ease: 'power3.inOut',
+      onStart: () => {
+        this.btnClose.style.transition = 'inherit'
+      },
+      onComplete: () => {
+        this.btnClose.style.display = 'none'
+      },
+    })
+
+    gsap.to(this.uiSidebar, {
+      autoAlpha: 1,
+      duration: 1.5,
+      ease: 'power3.inOut',
+    })
+  }
+
+  changeAnimation(backgroundColor) {
+    gsap.to(this.menuOverlay, {
+      backgroundColor: backgroundColor,
+      duration: 1.5,
+      ease: 'power3.inOut',
+    })
+  }
+
+  changeUI(color) {
+    gsap.to('[data-reveal="ui"]', {
+      color: color,
+      duration: 1,
+      ease: 'power3.inOut',
+    })
+
+    gsap.to('.menu--close__line', {
+      backgroundColor: color,
+      duration: 1,
+      ease: 'power3.inOut',
+    })
+  }
+
+  allStoriesRevealIn() {
+    gsap.fromTo(
+      '.allstories__item__number',
+      {
+        autoAlpha: 0,
+      },
+      {
+        autoAlpha: 0.5,
+        duration: 1.5,
+        delay: 0.5,
+        ease: 'power3.inOut',
+        stagger: 0.1,
+        onStart: () => {
+          this.allStories.style.display = 'flex'
+          document.querySelectorAll('.allstories__item').forEach((item) => {
+            item.style.transition = '0.25s ease-in-out'
+          })
+        },
+      }
+    )
+
+    gsap.fromTo(
+      '.allstories__item__title',
+      {
+        autoAlpha: 0,
+      },
+      {
+        autoAlpha: 1,
+        duration: 1.5,
+        delay: 0.5,
+        ease: 'power3.inOut',
+        stagger: 0.1,
+      }
+    )
+
+    gsap.fromTo(
+      '.allstories__item__hr',
+      {
+        scaleX: 0,
+      },
+      {
+        scaleX: 1,
+        transformOrigin: 'left',
+        duration: 1.5,
+        delay: 0.5,
+        ease: 'power3.inOut',
+        stagger: 0.1,
+      }
+    )
+  }
+
+  allStoriesRevealOut() {
+    gsap.to(this.allStories, {
+      autoAlpha: 0,
+      duration: 1,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        this.allStories.style.display = 'none'
+        this.allStories.style.opacity = 1
+        this.allStories.style.visibility = 'visible'
+        document.querySelectorAll('.allstories__item').forEach((item) => {
+          item.style.transition = 'inherit'
+        })
       },
     })
   }

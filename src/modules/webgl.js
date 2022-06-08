@@ -91,6 +91,17 @@ export default class WebGL {
     ///////////////////////////////////////////////
 
     //
+    // AUDIO
+    //
+
+    this.audio_bg = new Audio('./src/audio/bg.mp3')
+    this.audio_intro = new Audio('./src/audio/intro.mp3')
+    this.audio_readIn = new Audio('./src/audio/read-in.mp3')
+    this.audio_readOut = new Audio('./src/audio/read-out.mp3')
+    this.audio_reveal = new Audio('./src/audio/reveal.mp3')
+    this.audio_reset = new Audio('./src/audio/reset.mp3')
+
+    //
     // STATS
     //
 
@@ -165,6 +176,7 @@ export default class WebGL {
     this.startFlag = false
     this.slowFlag = []
     this.speedFlag = true
+    this.audioRevealFlag = true
 
     // Empty Variables
     this.lightSource
@@ -350,6 +362,14 @@ export default class WebGL {
   }
 
   enter() {
+    // ---> Audio
+    this.audio_bg.play()
+    setTimeout(() => {
+      this.audio_intro.play()
+    }, 500)
+
+    // ---> Animation
+
     gsap.fromTo(
       this.lightObject.position,
       {
@@ -927,6 +947,12 @@ export default class WebGL {
       ease: 'power3',
     })
 
+    // ---> Audio
+    if (this.audioRevealFlag) {
+      this.audio_reveal.play()
+      this.audioRevealFlag = false
+    }
+
     // ---> Sidebar
     this.objectIndex = (index + 1) / this.hoverObjectCount - 1
 
@@ -1021,6 +1047,10 @@ export default class WebGL {
   }
 
   read() {
+    // ---> Audio
+    this.audio_readIn.play()
+
+    // ---> Animation
     gsap.to(this.camera.position, {
       y: 7,
       duration: 3,
@@ -1076,6 +1106,10 @@ export default class WebGL {
   }
 
   readClose() {
+    // ---> Audio
+    this.audio_readOut.play()
+
+    // ---> Animation
     gsap.to(this.camera.position, {
       y: 4,
       duration: 2,
@@ -1120,13 +1154,14 @@ export default class WebGL {
   }
 
   reset() {
+    // ---> Audio
+    this.audio_reset.play()
+
     // ---> Global
-
     this.globalSpeed.value = 0.0035
-
     this.mouseFlag = true
-
     this.objectsBlock = false
+    this.audioRevealFlag = true
 
     // ---> Video
     this.video.playbackRate = 2
